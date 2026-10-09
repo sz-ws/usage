@@ -73,3 +73,19 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Above the detail in the one-screen layout: a strip, not a block. */
+.desk .findings {
+  font-size: var(--text-small);
+}
+
+.desk .findings ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.75rem;
+}
+
+.desk .findings button,
+.desk .findings p {
+  width: auto;
+}

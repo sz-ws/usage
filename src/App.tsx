@@ -295,71 +295,51 @@ function Account({ account, renewalDay, snapshot, now, stale, open, onSelect, on
     });
   };
 
+  const verdictPart = (
+    <Verdict headline={verdict} cycle={report.cycle} nowMs={now} renewalDay={renewalDay} onRenewalDay={onRenewalDay} />
+  );
+  const findingsPart = <Findings findings={found} onOpen={reveal} />;
+  const listPart = (
+    <MetricList
+      notable={notable}
+      minor={minor}
+      unused={unused}
+      report={report}
+      days={snapshot.days.length}
+      selected={shown?.def.id ?? null}
+      dense={wide}
+      onSelect={(id) => onSelect(!wide && id === open ? null : id)}
+      inlineDetail={wide ? undefined : (evaluation) => <div className="inline-detail">{detailOf(evaluation, false)}</div>}
+    />
+  );
+  // With the width for it, everything stays on one screen: the answer and every
+  // metric down the left, the selected one's detail on the right. Each side
+  // scrolls on its own when it has more than fits; the page does not. What the
+  // numbers are and the way out are behind "About" in the top bar.
+  if (wide) {
+    return (
+      <main className="page-body desk" data-stale={stale || undefined}>
+        <div className="desk-side">
+          {verdictPart}
+          <div className="desk-scroll">{listPart}</div>
+        </div>
+        <div className="desk-stage">
+          {findingsPart}
+          {shown && (
+            <aside className="pane" aria-label={m.detail.pane({ metric: shown.def.id })}>
+              {detailOf(shown, true)}
+            </aside>
+          )}
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="page-body" data-stale={stale || undefined}>
-      <Verdict
-        headline={verdict}
-        cycle={report.cycle}
-        nowMs={now}
-        renewalDay={renewalDay}
-        onRenewalDay={onRenewalDay}
-      />
-      <Findings findings={found} onOpen={reveal} />
-
-      <div className="board" data-wide={wide || undefined}>
-        <MetricList
-          notable={notable}
-          minor={minor}
-          unused={unused}
-          report={report}
-          days={snapshot.days.length}
-          selected={shown?.def.id ?? null}
-          onSelect={(id) => onSelect(!wide && id === open ? null : id)}
-          inlineDetail={wide ? undefined : (evaluation) => <div className="inline-detail">{detailOf(evaluation, false)}</div>}
-        />
-        {wide && shown && (
-          <aside className="pane" aria-label={m.detail.pane({ metric: shown.def.id })}>
-            {detailOf(shown, true)}
-          </aside>
-        )}
-      </div>
-
-      <footer className="sources">
-        <p>
-          {m.footer.estimate} {m.footer.prices.before}
-          <a href="https://developers.cloudflare.com/workers/platform/pricing/" rel="noreferrer">
-            Workers
-          </a>
-          {m.footer.prices.between}
-          <a href="https://developers.cloudflare.com/r2/pricing/" rel="noreferrer">
-            R2
-          </a>
-          {m.footer.prices.after}
-        </p>
-        <p>
-          {m.footer.json.before}
-          <a href={`/api/v1/usage?account=${encodeURIComponent(account.name)}`} target="_blank" rel="noreferrer">
-            {account.name}
-          </a>
-          {m.footer.json.between}
-          <a href="/api/v1/usage" target="_blank" rel="noreferrer">
-            {m.footer.json.all}
-          </a>
-        </p>
-        <p>
-          {m.footer.agent.before}
-          <code>{`${window.location.origin}/mcp`}</code>
-          {m.footer.agent.after}
-        </p>
-        {snapshot.warnings.length > 0 && (
-          <ul>
-            {snapshot.warnings.map((warning, index) => (
-              <li key={`${warning.kind}:${index}`}>{m.warning(warning)}</li>
-            ))}
-          </ul>
-        )}
-        <SignOut />
-      </footer>
+      {verdictPart}
+      {findingsPart}
+      <div className="board">{listPart}</div>
     </main>
   );
 }

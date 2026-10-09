@@ -361,6 +361,7 @@ export const zhTW: Messages = {
   },
 
   reconnect: "重新連接",
+  about: "關於",
 
   warning: (w) => {
     switch (w.kind) {

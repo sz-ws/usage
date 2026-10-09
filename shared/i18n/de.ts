@@ -430,6 +430,7 @@ export const de: Messages = {
   },
 
   reconnect: "Erneut verbinden",
+  about: "Info",
 
   warning: (w) => {
     switch (w.kind) {

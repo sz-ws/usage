@@ -291,6 +291,8 @@ export interface Messages {
   tokenProblem: (p: TokenProblem) => string;
   /** The link beside `errors.reconnect`, which leads to connecting Cloudflare again. */
   reconnect: string;
+  /** Opens, and heads, the panel that says what the numbers are, where else to read them, and signs out. */
+  about: string;
 
   warning: (w: Warning) => string;
 

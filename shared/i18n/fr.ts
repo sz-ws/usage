@@ -543,6 +543,7 @@ export const fr: Messages = {
   },
 
   reconnect: "Se reconnecter",
+  about: "À propos",
 
   warning: (w) => {
     switch (w.kind) {

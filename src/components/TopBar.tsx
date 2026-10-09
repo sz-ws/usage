@@ -2,6 +2,7 @@ import { formatAgo } from "../../shared/format";
 import type { Tone } from "../../shared/insights";
 import type { AccountState, AlertsView } from "../../shared/types";
 import { useMessages } from "../locale";
+import { About } from "./About";
 import { Alerts } from "./Alerts";
 import { LanguageSwitch } from "./LanguageSwitch";
 import "./topbar.css";
@@ -71,6 +72,7 @@ export function TopBar({ accounts, tones, current, onAccount, nowMs, refreshing,
 
       <div className="topbar-more">
         <Alerts alerts={alerts} onSaved={onAlerts} />
+        <About account={current} />
         <LanguageSwitch />
       </div>
     </header>
