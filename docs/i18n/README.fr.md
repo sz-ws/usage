@@ -8,7 +8,7 @@ Votre compte Cloudflare restera-t-il dans les limites de votre abonnement Worker
 
 ![Page de consommation : les requêtes Workers devraient dépasser les 10 millions inclus le 19 octobre, avec le graphique, le rythme et le dépassement estimé à côté de la liste des produits](../screenshot.png)
 
-Un Worker dans votre propre compte Cloudflare. Il lit la consommation du compte dans Cloudflare Analytics, la compare à ce qu'inclut l'abonnement et projette où se situera chaque produit à la fin de la période. Consultez-la sur une page, récupérez-la en JSON, ou laissez un agent l'interroger par MCP. Rien ne quitte votre compte : il n'y a ni télémétrie ni service tiers.
+Un Worker dans votre propre compte Cloudflare. Il lit la consommation du compte dans Cloudflare Analytics, la compare à ce qu'inclut l'abonnement et projette où se situera chaque produit à la fin de la période. Consultez-la sur une page, récupérez-la en JSON, ou laissez un agent l'interroger par MCP. Votre consommation passe de Cloudflare à votre Worker, et nulle part ailleurs : il n'y a pas de télémétrie, et aucun de nos serveurs ne la voit.
 
 ## Ce qu'il vous indique
 
@@ -32,13 +32,11 @@ pnpm demo        # données fictives sur http://localhost:8798
 
 Il vous faut un compte Cloudflare avec l'abonnement **Workers Paid**. Son fonctionnement ne coûte rien de plus que cela : il interroge Cloudflare quatre fois par jour et conserve le résultat dans KV, une petite fraction de ce que l'abonnement inclut déjà.
 
-1. **Cliquez sur Deploy to Cloudflare.** Il crée l'espace de noms KV dont il a besoin et demande deux secrets.
-   - `ANALYTICS_TOKEN` : un jeton API avec une seule permission, **Account Analytics: Read**. [Ce lien](https://dash.cloudflare.com/?to=/:account/api-tokens&permissionGroupKeys=%5B%7B%22key%22%3A%22account_analytics%22%2C%22type%22%3A%22read%22%7D%5D&name=usage) remplit le formulaire. Le jeton montre combien a été consommé et rien de ce qui est stocké : il ne peut pas lire une base de données, une valeur KV ni un objet R2, et il ne peut rien modifier.
-   - `ACCESS_KEY` : le mot de passe de votre page, de 24 caractères ou plus. `openssl rand -base64 32` en génère un.
-2. **Ouvrez l'adresse du Worker** et connectez-vous avec la clé d'accès.
+1. **Cliquez sur Deploy to Cloudflare.** Il crée l'espace de noms KV dont il a besoin. Il n'y a ni jeton à créer ni mot de passe à choisir.
+2. **Ouvrez l'adresse du Worker et cliquez sur Continuer avec Cloudflare**, deux fois : une fois pour trouver vos comptes, une fois pour que la page puisse lire leur consommation. Ce que vous autorisez montre combien a été consommé, et rien de ce qui est stocké : il ne peut lire ni une base de données, ni une valeur KV, ni un objet R2, et il ne peut rien modifier.
 3. **Réglez le jour de renouvellement de votre facture.** Vous le trouverez dans Manage Account → Billing → Subscriptions, sur le tableau de bord Cloudflare.
 
-Depuis un clone, avec plusieurs comptes ou sur votre propre domaine : [docs/deploy.md](../deploy.md) (en anglais).
+Ce que la connexion demande et conserve : [docs/sign-in.md](../sign-in.md) (en anglais). Avec un jeton API à la place, depuis un clone ou sur votre propre domaine : [docs/deploy.md](../deploy.md) (en anglais).
 
 ## Connecter un agent
 
@@ -55,6 +53,7 @@ Votre Worker vous demande de vous connecter et de l'autoriser, et l'agent reçoi
 Les documents suivants sont en anglais.
 
 - [Déploiement et configuration](../deploy.md)
+- [Connexion avec Cloudflare](../sign-in.md)
 - [Agents, MCP et API JSON](../agents.md)
 - [Alertes par ntfy ou webhook](../alerts.md)
 - [Fonctionnement, et d'où viennent les chiffres](../how-it-works.md)
@@ -63,3 +62,5 @@ Les documents suivants sont en anglais.
 ## Licence
 
 [Apache-2.0](../../LICENSE)
+
+Un projet indépendant, non affilié à Cloudflare, Inc. et non approuvé par cette société. Cloudflare et le logo Cloudflare sont des marques de Cloudflare, Inc.

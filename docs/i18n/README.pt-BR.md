@@ -8,7 +8,7 @@ Sua conta da Cloudflare vai continuar dentro do plano Workers Paid neste períod
 
 ![Página de uso: as solicitações do Workers devem ultrapassar os 10 milhões incluídos no dia 19 de outubro, com o gráfico, o ritmo e o excedente estimado ao lado da lista de produtos](../screenshot.png)
 
-Um Worker na sua própria conta da Cloudflare. Ele lê o uso da conta no Cloudflare Analytics, compara com o que o plano inclui e projeta em que ponto cada produto vai estar quando o período fechar. Veja em uma página, obtenha em JSON ou deixe um agente consultar pelo MCP. Nada sai da sua conta: não há telemetria nem serviço de terceiros.
+Um Worker na sua própria conta da Cloudflare. Ele lê o uso da conta no Cloudflare Analytics, compara com o que o plano inclui e projeta em que ponto cada produto vai estar quando o período fechar. Veja em uma página, obtenha em JSON ou deixe um agente consultar pelo MCP. Seu uso vai da Cloudflare para o seu Worker e para mais nenhum lugar: não há telemetria, e nenhum servidor nosso o vê.
 
 ## O que ele mostra
 
@@ -32,13 +32,11 @@ pnpm demo        # dados fictícios em http://localhost:8798
 
 Você precisa de uma conta da Cloudflare no **Workers Paid**. Rodar isso não custa nada além disso: o Worker consulta a Cloudflare quatro vezes por dia e guarda o resultado no KV, uma fração pequena do que o plano já inclui.
 
-1. **Clique em Deploy to Cloudflare.** Ele cria o namespace do KV de que precisa e pede dois segredos.
-   - `ANALYTICS_TOKEN`: um token de API com uma única permissão, **Account Analytics: Read**. [Este link](https://dash.cloudflare.com/?to=/:account/api-tokens&permissionGroupKeys=%5B%7B%22key%22%3A%22account_analytics%22%2C%22type%22%3A%22read%22%7D%5D&name=usage) preenche o formulário. O token mostra quanto foi usado e nada do que está armazenado: ele não consegue ler um banco de dados, um valor do KV nem um objeto do R2, e não pode alterar nada.
-   - `ACCESS_KEY`: a senha da sua página, com 24 caracteres ou mais. `openssl rand -base64 32` gera uma.
-2. **Abra o endereço do Worker** e entre com a chave de acesso.
+1. **Clique em Deploy to Cloudflare.** Ele cria o namespace do KV de que o Worker precisa. Não há token para criar nem senha para escolher.
+2. **Abra o endereço do Worker e clique em Continuar com a Cloudflare**, duas vezes: uma para encontrar as suas contas, outra para permitir que a página leia o uso delas. O que você autoriza mostra quanto foi usado e nada do que está armazenado: não consegue ler um banco de dados, um valor do KV nem um objeto do R2, e não pode alterar nada.
 3. **Defina o dia em que a sua fatura é renovada.** Você encontra isso em Manage Account → Billing → Subscriptions, no painel da Cloudflare.
 
-A partir de um clone, com várias contas ou no seu próprio domínio: [docs/deploy.md](../deploy.md) (em inglês).
+O que o login com a Cloudflare pede e guarda: [docs/sign-in.md](../sign-in.md) (em inglês). Com um token de API no lugar, a partir de um clone ou no seu próprio domínio: [docs/deploy.md](../deploy.md) (em inglês).
 
 ## Conectar um agente
 
@@ -55,6 +53,7 @@ Seu Worker pede para você entrar e autorizar o acesso, e o agente recebe um tok
 Os documentos a seguir estão em inglês.
 
 - [Deploy e configuração](../deploy.md)
+- [Entrar com a Cloudflare](../sign-in.md)
 - [Agentes, MCP e API JSON](../agents.md)
 - [Alertas por ntfy ou webhook](../alerts.md)
 - [Como funciona, e de onde vêm os números](../how-it-works.md)
@@ -63,3 +62,5 @@ Os documentos a seguir estão em inglês.
 ## Licença
 
 [Apache-2.0](../../LICENSE)
+
+Um projeto independente, não afiliado à Cloudflare, Inc. nem endossado por ela. Cloudflare e o logotipo da Cloudflare são marcas comerciais da Cloudflare, Inc.

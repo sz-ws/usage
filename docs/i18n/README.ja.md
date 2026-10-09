@@ -8,7 +8,7 @@
 
 ![使用量ページ：Workers リクエストは、プランの枠の1,000万件を10月19日に超える見込みです。グラフ、ペース、推定超過料金が製品一覧の横に並んでいます](../screenshot.png)
 
-お使いの Cloudflare アカウントにデプロイする Worker です。Cloudflare Analytics からアカウントの使用量を読み取り、プランの枠と比べて、今期末の各製品の見込みを推定します。ページで見ることも、JSON で取得することも、MCP 経由でエージェントに問い合わせることもできます。データがお使いのアカウントの外に出ることはありません。テレメトリーも第三者のサービスもありません。
+お使いの Cloudflare アカウントにデプロイする Worker です。Cloudflare Analytics からアカウントの使用量を読み取り、プランの枠と比べて、今期末の各製品の見込みを推定します。ページで見ることも、JSON で取得することも、MCP 経由でエージェントに問い合わせることもできます。お使いの使用量は Cloudflare からお使いの Worker に届くだけで、ほかのどこにも行きません。テレメトリーはなく、これを見る私たちのサーバーもありません。
 
 ## わかること
 
@@ -32,13 +32,11 @@ pnpm demo        # 架空のデータ、http://localhost:8798
 
 **Workers Paid** のプランを使っている Cloudflare アカウントが必要です。Workers Paid 以外の費用はかかりません。1日4回 Cloudflare から読み取り、結果を KV に保存します。その使用量は、すでにプランに含まれる枠のごく一部です。
 
-1. **Deploy to Cloudflare を押してください。** 必要な KV namespace を作成し、2つのシークレットの入力を求められます。
-   - `ANALYTICS_TOKEN`：1つの権限、**Account Analytics: Read** だけを持つ API トークンです。[このリンク](https://dash.cloudflare.com/?to=/:account/api-tokens&permissionGroupKeys=%5B%7B%22key%22%3A%22account_analytics%22%2C%22type%22%3A%22read%22%7D%5D&name=usage)を開くと、フォームに入力された状態で表示されます。このトークンで見えるのは使用量だけで、保存されている内容は見えません：データベース、KV の値、R2 のオブジェクトは読み取れず、何かを変更することもできません。
-   - `ACCESS_KEY`：ページのアクセスキーです。24文字以上。`openssl rand -base64 32` で作成できます。
-2. **Worker のアドレスを開き**、アクセスキーでログインします。
+1. **Deploy to Cloudflare を押してください。** 必要な KV namespace を作成します。トークンを作る必要も、パスワードを決める必要もありません。
+2. **Worker のアドレスを開き、「Cloudflareで続ける」を2回押してください。** 1回目はアカウントを探すため、2回目はページがその使用量を読めるようにするためです。許可する範囲で見えるのは使用量だけで、保存されている内容は見えません。データベース、KV の値、R2 のオブジェクトは読み取れず、何かを変更することもできません。
 3. **請求の更新日を設定します。** Cloudflare ダッシュボードの Manage Account → Billing → Subscriptions にあります。
 
-クローンから、複数アカウントで、または独自のドメインで使う場合：[docs/deploy.md](../deploy.md)（英語）。
+ログインで求められるものと、保存されるもの：[docs/sign-in.md](../sign-in.md)（英語）。API トークンを使う場合、クローンから、または独自のドメインで使う場合：[docs/deploy.md](../deploy.md)（英語）。
 
 ## エージェントに接続する
 
@@ -55,6 +53,7 @@ claude mcp add --transport http usage https://<お使いの Worker>/mcp
 以下のドキュメントは英語です。
 
 - [デプロイと設定](../deploy.md)
+- [Cloudflare でのログイン](../sign-in.md)
 - [エージェント、MCP、JSON API](../agents.md)
 - [ntfy または webhook による通知](../alerts.md)
 - [仕組みと、数字の出どころ](../how-it-works.md)
@@ -63,3 +62,5 @@ claude mcp add --transport http usage https://<お使いの Worker>/mcp
 ## ライセンス
 
 [Apache-2.0](../../LICENSE)
+
+独立したプロジェクトで、Cloudflare, Inc. とは提携しておらず、同社の承認も受けていません。Cloudflare と Cloudflare のロゴは、Cloudflare, Inc. の商標です。
