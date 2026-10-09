@@ -4,5 +4,9 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
 
+# no-transform: a network in front must not add to these pages or rewrite them.
+/
+  Cache-Control: public, max-age=0, must-revalidate, no-transform
+
 /callback
-  Cache-Control: no-store
+  Cache-Control: no-store, no-transform
