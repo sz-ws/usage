@@ -506,6 +506,8 @@ export const es: Messages = {
     return `Cloudflare rechazó el token de API ${token} (${status}). Revisa que tenga el permiso Account Analytics: Read y que no haya caducado.`;
   },
 
+  reconnect: "Volver a conectar",
+
   warning: (w) => {
     switch (w.kind) {
       case "recent-unavailable":
@@ -526,6 +528,7 @@ export const es: Messages = {
     "invalid-request": "La solicitud no fue aceptada. Recarga la página e inténtalo de nuevo.",
     "rate-limited": "Demasiadas solicitudes. Espera un minuto e inténtalo de nuevo.",
     unauthenticated: "Tu sesión caducó. Vuelve a iniciar sesión.",
+    reconnect: "Cloudflare ya no acepta el inicio de sesión de esta página, así que las cifras han dejado de actualizarse.",
     unavailable: "El servicio no está disponible en este momento. Inténtalo de nuevo en unos minutos.",
     unknown: "Algo salió mal. Inténtalo de nuevo.",
   },

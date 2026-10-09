@@ -360,6 +360,8 @@ export const zhTW: Messages = {
     return `Cloudflare 拒絕了第 ${token} 個 API token（${status}）。確認它有 Account Analytics: Read 權限，而且還沒過期。`;
   },
 
+  reconnect: "重新連接",
+
   warning: (w) => {
     switch (w.kind) {
       case "recent-unavailable":
@@ -383,6 +385,7 @@ export const zhTW: Messages = {
     "invalid-request": "這個請求沒有被接受，重新整理頁面再試一次。",
     "rate-limited": "請求太頻繁了，等一分鐘再試。",
     unauthenticated: "登入狀態失效了，請重新登入。",
+    reconnect: "Cloudflare 不再接受這個頁面的授權，數字已經停止更新。",
     unavailable: "服務暫時無法使用，稍後再試一次。",
     unknown: "出了點問題，再試一次。",
   },

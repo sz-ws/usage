@@ -124,6 +124,7 @@ describe("what a deployment needs before it serves anything", () => {
   it("is ready with a token and a long enough key", () => {
     expect(setupOf({ ANALYTICS_TOKEN: TOKEN, ACCESS_KEY: ` ${KEY} ` })).toEqual({
       ready: true,
+      mode: "keys",
       accessKey: KEY,
       tokens: [TOKEN],
     });

@@ -13,6 +13,7 @@ import type { AccountSettings, ResourceNames, Settings, Snapshot, StoredAlerts, 
  *   usage:settings            what was set on the page (billing day per account, alerts)
  *   usage:alerted:<account>   what the owner has already been told this billing period
  *   usage:alerted:tokens      which token problems have been reported
+ *   usage:connection          the Cloudflare sign-in the Worker reads with, when it has no API token
  */
 
 const PREFIX = "usage:";
@@ -28,6 +29,30 @@ export interface Directory {
   /** `token` is the position of the token that reads the account, counted from 0. */
   accounts: { id: string; name: string; token: number }[];
   problems: TokenProblem[];
+}
+
+/**
+ * The grant a Cloudflare sign-in left with this Worker, and what goes with it.
+ * The grant can read analytics and nothing else.
+ */
+export interface Connection {
+  v: 1;
+  /** A refresh token only works with the client it was issued to. */
+  clientId: string;
+  /** The account this Worker runs in. Being able to read it is what lets a person in. */
+  home: string;
+  /** The accounts the owner chose, home first. The grant cannot list them itself. */
+  accounts: { id: string; name: string }[];
+  /** Replaced by Cloudflare every time it is used. */
+  refreshToken: string;
+  accessToken: string;
+  /** Epoch milliseconds. */
+  accessExpiresAt: number;
+  connectedAt: string;
+  /** Browser sessions are signed with this, and agents' grants are tied to it. */
+  sessionKey: string;
+  /** Cloudflare said the grant is gone: the owner has to connect again. */
+  broken: boolean;
 }
 
 export interface NamesRecord {
@@ -49,6 +74,15 @@ export class Store {
 
   async saveDirectory(directory: Directory): Promise<void> {
     await this.kv.put(`${PREFIX}directory`, JSON.stringify(directory));
+  }
+
+  async connection(): Promise<Connection | null> {
+    const stored = await this.kv.get<Connection>(`${PREFIX}connection`, "json");
+    return stored?.v === 1 ? stored : null;
+  }
+
+  async saveConnection(connection: Connection): Promise<void> {
+    await this.kv.put(`${PREFIX}connection`, JSON.stringify(connection));
   }
 
   async snapshot(accountId: string): Promise<Snapshot | null> {

@@ -76,6 +76,8 @@ export interface AppState {
   /** API tokens that did not work. Empty when all of them did. */
   problems: TokenProblem[];
   alerts: AlertsView;
+  /** Cloudflare no longer honours the sign-in the readings come through. Absent when they come through an API token. */
+  reconnect?: boolean;
 }
 
 /** What the owner wants to hear about. */

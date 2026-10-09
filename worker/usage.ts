@@ -11,12 +11,17 @@ import { Store, type Directory } from "./store";
  * report, the MCP tools and the scheduled refresh.
  */
 
+export type DirectoryAccount = Directory["accounts"][number];
+
 export interface Reader {
   store: Store;
+  /** API tokens, each asked which accounts it can see. Empty when the owner signed in with Cloudflare instead. */
   tokens: readonly string[];
+  /** The accounts a Cloudflare sign-in was allowed to read. Such a grant cannot list them itself. */
+  known?: readonly { id: string; name: string }[];
+  /** What reads `account` right now. */
+  tokenFor(account: DirectoryAccount): Promise<string>;
 }
-
-export type DirectoryAccount = Directory["accounts"][number];
 
 /** A refresh asked for sooner than this after the last one returns what is already stored. */
 export const MIN_REFRESH_INTERVAL_MS = 60_000;
@@ -25,7 +30,23 @@ export const MIN_REFRESH_INTERVAL_MS = 60_000;
 const NAMES_TTL_MS = 86_400_000;
 
 export function readerFor(kv: KVNamespace, tokens: readonly string[]): Reader {
-  return { store: new Store(kv), tokens };
+  return {
+    store: new Store(kv),
+    tokens,
+    tokenFor: async (account) => {
+      const token = tokens[account.token];
+      if (!token) throw new Error(`no token for account ${account.id}`);
+      return token;
+    },
+  };
+}
+
+/** The accounts there are to show, wherever the reader learns them from. */
+export async function accountsOf(reader: Reader, nowMs: number, options: { fresh?: boolean } = {}): Promise<Directory> {
+  if (!reader.known) return directoryOf(reader.store, reader.tokens, nowMs, options);
+
+  const accounts = reader.known.map((account) => ({ ...account, token: 0 }));
+  return { v: 1, fetchedAt: new Date(nowMs).toISOString(), tokens: "", accounts, problems: [] };
 }
 
 /** Refreshes under way in this isolate, so a second press joins the first instead of repeating it. */
@@ -46,8 +67,7 @@ export function refreshAccount(
 }
 
 async function readAndStore(reader: Reader, account: DirectoryAccount, existing: Snapshot | null): Promise<Snapshot> {
-  const token = reader.tokens[account.token];
-  if (!token) throw new Error(`no token for account ${account.id}`);
+  const token = await reader.tokenFor(account);
 
   const nowMs = Date.now();
   const read = await readUsage(token, account.id, nowMs);
@@ -89,7 +109,7 @@ export function renewalDayOf(settings: Record<string, AccountSettings>, accountI
 /** Everything the page shows: each account with its settings, its last reading and its resource names. */
 export async function readState(reader: Reader, nowMs: number): Promise<AppState> {
   const [directory, settings] = await Promise.all([
-    directoryOf(reader.store, reader.tokens, nowMs),
+    accountsOf(reader, nowMs),
     reader.store.settings(),
   ]);
 
@@ -113,7 +133,7 @@ export async function readState(reader: Reader, nowMs: number): Promise<AppState
  */
 export async function refreshAll(reader: Reader): Promise<void> {
   const nowMs = Date.now();
-  const directory = await directoryOf(reader.store, reader.tokens, nowMs, { fresh: true });
+  const directory = await accountsOf(reader, nowMs, { fresh: true });
   const settings = await reader.store.settings();
 
   for (const account of directory.accounts) {

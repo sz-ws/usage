@@ -369,6 +369,8 @@ export const ja: Messages = {
     return `API トークン（${token}番目）をCloudflareが拒否しました（${status}）。「Account Analytics: Read」の権限があり、期限切れでないか確認してください。`;
   },
 
+  reconnect: "再接続",
+
   warning: (w) => {
     switch (w.kind) {
       case "recent-unavailable":
@@ -389,6 +391,7 @@ export const ja: Messages = {
     "invalid-request": "リクエストが受け付けられませんでした。ページを再読み込みして、もう一度試してください。",
     "rate-limited": "リクエストが多すぎます。1分待ってから、もう一度試してください。",
     unauthenticated: "ログインの有効期限が切れました。もう一度ログインしてください。",
+    reconnect: "Cloudflareがこのページのログインを受け付けなくなったため、数字の更新が止まっています。",
     unavailable: "現在サービスを利用できません。しばらくしてから、もう一度試してください。",
     unknown: "問題が発生しました。もう一度試してください。",
   },

@@ -21,6 +21,48 @@ export interface PageText {
     tooMany: string;
   };
 
+  /** Signing in with Cloudflare, for a deployment that reads through the owner's own sign-in. */
+  connect: {
+    connectTitle: string;
+    connectLead: string;
+    reconnectTitle: string;
+    reconnectLead: string;
+    /** The first step: Cloudflare says which accounts there are. */
+    findTitle: string;
+    findText: string;
+    /** Beside a finished first step, to go through it again with other accounts. */
+    findAgain: string;
+    /** The second step: the access this page keeps. */
+    grantTitle: string;
+    grantText: string;
+    /** Shown once the first step is done: Cloudflare's page asks for the accounts again. */
+    grantSame: string;
+    /** The button that leaves for Cloudflare, in either step. */
+    button: string;
+    signInLead: string;
+    signInButton: string;
+    /** Opens the list of permissions Cloudflare's own page will name. */
+    askedTitle: string;
+    askedSettings: string;
+    askedAnalytics: string;
+    problemTitle: string;
+    tryAgain: string;
+    problems: {
+      /** Took too long, or the answer belongs to another browser's attempt. */
+      expired: string;
+      declined: string;
+      failed: string;
+      noAccounts: string;
+      /** None of the chosen accounts is the one this Worker runs in. */
+      notFound: string;
+      notAllowed: string;
+      otherAccount: string;
+      /** Cloudflare gave no way to stay connected. */
+      notKept: string;
+      tooMany: string;
+    };
+  };
+
   consent: {
     title: (client: string) => string;
     scope: string;

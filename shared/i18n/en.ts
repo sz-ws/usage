@@ -407,6 +407,8 @@ export const en: Messages = {
     return `Cloudflare refused API token ${token} (${status}). Check that it has Account Analytics: Read and has not expired.`;
   },
 
+  reconnect: "Reconnect",
+
   warning: (w) => {
     switch (w.kind) {
       case "recent-unavailable":
@@ -427,6 +429,7 @@ export const en: Messages = {
     "invalid-request": "The request was not accepted. Reload the page and try again.",
     "rate-limited": "Too many requests. Wait a minute and try again.",
     unauthenticated: "Your sign-in has expired. Sign in again.",
+    reconnect: "Cloudflare no longer accepts this page's sign-in, so the figures have stopped updating.",
     unavailable: "The service is unavailable right now. Try again in a moment.",
     unknown: "Something went wrong. Try again.",
   },

@@ -30,3 +30,16 @@ export function fakeFetch(routes: Record<string, (request: Request) => Response 
   };
   return { fetcher, calls };
 }
+
+/** An execution context that collects what the Worker leaves running, so a test can wait for it. */
+export function fakeContext() {
+  const pending: Promise<unknown>[] = [];
+  const ctx = {
+    waitUntil: (work: Promise<unknown>) => {
+      pending.push(work.catch(() => undefined));
+    },
+    passThroughOnException: () => undefined,
+    props: {},
+  } as unknown as ExecutionContext;
+  return { ctx, settled: () => Promise.all(pending) };
+}

@@ -20,6 +20,15 @@
   --color-heading: #343433;
   --color-body: #494440;
   --color-muted: #7a7774;
+  --color-hairline: #e9e6e2;
+  /* The colour of things to press and of steps under way. Not used for status, which has its own. */
+  --color-accent: #343433;
+  --color-accent-strong: #1f1f1e;
+  --color-accent-wash: #ffffff;
+  --color-on-accent: #ffffff;
+  /* The card's padding, named so the button at its foot can reach nearly to its edges. */
+  --door-pad: clamp(1.4rem, 5vw, 2.1rem);
+  --door-inset: 0.9rem;
   --color-hairline-strong: #dcdad6;
   --tile-watch: #fdeecd;
   --watch-ink: #7a5410;
@@ -41,7 +50,7 @@ body {
   min-height: 100svh;
   display: grid;
   place-items: start center;
-  padding: clamp(2.5rem, 12vh, 7rem) 1rem 3rem;
+  padding: clamp(2rem, 9vh, 5rem) 1rem 3rem;
   background: var(--color-bg);
   color: var(--color-body);
   font-family:
@@ -52,20 +61,70 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.door {
+.door-shell {
   width: 100%;
-  max-width: 25rem;
+  max-width: 30rem;
 }
 
 .door-product {
-  margin: 0 0 1.75rem;
+  margin: 0 0 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-heading);
+}
+
+.door {
+  padding: var(--door-pad);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  box-shadow:
+    inset 0 0 0 1px var(--color-hairline),
+    0 18px 40px -28px rgb(52 52 51 / 0.28);
+}
+
+.door > :last-child {
+  margin-bottom: 0;
+}
+
+.door-foot {
+  display: flex;
+  justify-content: center;
+  margin: 1.25rem 0 0;
+}
+
+.door-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.8rem 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: var(--color-card);
+  box-shadow: inset 0 0 0 1px var(--color-hairline-strong);
+  color: var(--color-body);
   font-size: 0.84rem;
-  color: var(--color-muted);
+  font-weight: 550;
+  text-decoration: none;
+  transition:
+    color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
+}
+
+.door-source:hover {
+  box-shadow: inset 0 0 0 1px var(--color-heading);
+  color: var(--color-heading);
+}
+
+.door-source svg {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
 }
 
 h1 {
-  margin: 0 0 0.9rem;
-  font-size: 1.45rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.3rem;
   font-weight: 650;
   line-height: 1.25;
   letter-spacing: -0.02em;
@@ -73,13 +132,216 @@ h1 {
   text-wrap: balance;
 }
 
-p {
-  margin: 0 0 0.9rem;
+.door-lead {
+  color: var(--color-muted);
 }
 
-.door-facts {
+/* Connecting: two steps, one under the other, joined by a line that says which comes first. */
+.door-steps {
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.door-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  gap: 0.9rem;
+  padding-bottom: 1.5rem;
+}
+
+.door-step:last-child {
+  padding-bottom: 0;
+}
+
+.door-step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 2.1rem;
+  bottom: 0.35rem;
+  left: calc(0.875rem - 0.5px);
+  width: 1px;
+  background: var(--color-hairline-strong);
+}
+
+.door-step.is-done:not(:last-child)::before {
+  background: var(--color-accent);
+}
+
+.door-step-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.door-step h2 {
+  margin: 0.2rem 0 0.3rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-heading);
+}
+
+.door-step p {
+  margin: 0;
   color: var(--color-muted);
+}
+
+.door-step form {
+  margin-top: 0.95rem;
+}
+
+.door-step-head form {
+  margin: 0;
+}
+
+.door-step-mark {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--color-accent-wash);
+  box-shadow: inset 0 0 0 1.5px var(--color-accent);
+  font-size: 0.82rem;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent-strong);
+}
+
+.door-step.is-done .door-step-mark {
+  background: var(--color-accent);
+  box-shadow: none;
+  color: var(--color-on-accent);
+}
+
+.door-step.is-waiting .door-step-mark {
+  background: var(--color-card);
+  box-shadow: inset 0 0 0 1px var(--color-hairline-strong);
+  color: var(--color-muted);
+}
+
+.door-step-mark svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.door-step.is-waiting h2,
+.door-step.is-waiting p {
+  color: var(--color-muted);
+}
+
+/* The accounts the first step found: each a small tag, its initial in a round mark. */
+.door-accounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.door-accounts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  max-width: 100%;
+  padding: 0.25rem 0.75rem 0.25rem 0.3rem;
+  border-radius: 999px;
+  background: var(--color-bg);
+  box-shadow: inset 0 0 0 1px var(--color-hairline);
+  font-size: 0.88rem;
+  font-weight: 550;
+  color: var(--color-heading);
+}
+
+.door-accounts li span:last-child {
+  min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.door-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 50%;
+  background: var(--color-wash);
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: var(--color-body);
+}
+
+/* What to do on Cloudflare's page for the step in turn. */
+.door-step .door-step-note {
+  margin-top: 0.55rem;
+  font-weight: 550;
+  color: var(--color-heading);
+}
+
+/* What Cloudflare's own page will name, for whoever wants to check first. */
+.door-more {
+  margin-top: 1.3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-hairline);
+  font-size: 0.86rem;
+  color: var(--color-muted);
+}
+
+.door-more summary {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  font-weight: 550;
+  list-style: none;
+  cursor: pointer;
+  transition: color var(--duration-fast) ease;
+}
+
+.door-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.door-more summary::after {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-top: -0.2rem;
+  border-right: 1.5px solid currentcolor;
+  border-bottom: 1.5px solid currentcolor;
+  transform: rotate(45deg);
+  transition: transform var(--duration-fast) ease;
+}
+
+.door-more[open] summary::after {
+  margin-top: 0.15rem;
+  transform: rotate(-135deg);
+}
+
+.door-more summary:hover {
+  color: var(--color-heading);
+}
+
+.door-more ul {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.door-more li {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.door-more strong {
+  font-weight: 600;
+  color: var(--color-heading);
 }
 
 .door-caution,
@@ -171,20 +433,76 @@ button:active {
 }
 
 .door-primary {
-  background: var(--color-heading);
-  color: var(--color-bg);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 .door-primary:hover {
-  background: #1f1f1e;
+  background: var(--color-accent-strong);
 }
 
 .door-actions .door-primary {
   flex: 1;
 }
 
+/*
+ * The way to Cloudflare: the card's one strong button. It sits at the foot of
+ * the card and reaches almost to its edges, its corners following the card's.
+ */
+.door-cloudflare {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 3.1rem;
+  /* Follows the card's corner; never sharper than the other controls. */
+  border-radius: max(calc(var(--radius-card) - var(--door-inset)), var(--radius-control));
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 600;
+}
+
+.door-cloudflare:hover {
+  background: var(--color-accent-strong);
+}
+
+.door > form:last-child {
+  margin: 1.5rem calc(var(--door-inset) - var(--door-pad)) calc(var(--door-inset) - var(--door-pad));
+}
+
+.door-mark {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.door-mark path:first-child {
+  fill: var(--mark-main, #f6821f);
+}
+
+.door-mark path:last-child {
+  fill: var(--mark-side, #fbad41);
+}
+
+.door-link {
+  justify-self: start;
+  padding: 0;
+  background: none;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.door-link:hover {
+  background: none;
+  color: var(--color-accent-strong);
+}
+
 :focus-visible {
-  outline: 2px solid var(--color-heading);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 

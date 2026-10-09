@@ -47,7 +47,7 @@ export function bearerOf(authorization: string | null): string | null {
  * access key, so there is nothing to store and changing the access key signs
  * every browser out. It cannot
  * be withdrawn one at a time; with a single owner there is no one to withdraw
- * it from but yourself.
+ * it from but yourself. It lasts thirty days from the owner's last visit.
  */
 
 export const SESSION_TTL_MS = 30 * 86_400_000;
@@ -158,6 +158,22 @@ export function sessionOf(cookieHeader: string | null, secure: boolean): string 
     if (pair.slice(0, separator).trim() === name) return pair.slice(separator + 1).trim();
   }
   return null;
+}
+
+/** A session older than this is replaced on the owner's next visit. */
+const RENEW_AFTER_MS = 86_400_000;
+
+/**
+ * The cookie for a fresh session, when the one the request carries has been in
+ * use for a day or more; null otherwise. An owner who keeps coming back is
+ * never signed out: only a browser left alone for the whole of the session's
+ * life has to sign in again. Call it for a request already known to be signed in.
+ */
+export async function renewedSession(request: Request, accessKey: string, nowMs: number): Promise<string | null> {
+  const secure = new URL(request.url).protocol === "https:";
+  const expiresAt = Number(sessionOf(request.headers.get("cookie"), secure)?.split(".")[1]);
+  if (!Number.isFinite(expiresAt) || expiresAt - nowMs > SESSION_TTL_MS - RENEW_AFTER_MS) return null;
+  return sessionCookie(await issueSession(accessKey, nowMs), secure);
 }
 
 export async function isSignedIn(request: Request, accessKey: string, nowMs: number): Promise<boolean> {

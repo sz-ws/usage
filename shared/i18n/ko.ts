@@ -405,6 +405,8 @@ export const ko: Messages = {
     return `Cloudflare에서 ${token}번째 API 토큰을 거부했습니다 (${status}). Account Analytics: Read 권한이 있는지, 만료되지 않았는지 확인하세요.`;
   },
 
+  reconnect: "다시 연결",
+
   warning: (w) => {
     switch (w.kind) {
       case "recent-unavailable":
@@ -425,6 +427,7 @@ export const ko: Messages = {
     "invalid-request": "요청이 받아들여지지 않았습니다. 페이지를 새로고침한 뒤 다시 시도하세요.",
     "rate-limited": "요청이 너무 많습니다. 1분 뒤에 다시 시도하세요.",
     unauthenticated: "로그인이 만료되었습니다. 다시 로그인하세요.",
+    reconnect: "Cloudflare가 이 페이지의 로그인을 더 이상 받아들이지 않아 수치 업데이트가 멈췄습니다.",
     unavailable: "지금은 서비스를 이용할 수 없습니다. 잠시 후 다시 시도하세요.",
     unknown: "문제가 발생했습니다. 다시 시도하세요.",
   },

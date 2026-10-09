@@ -6,7 +6,8 @@ import { SCOPE, type GrantProps } from "./authorize";
 import { setupOf, type Env } from "./env";
 import { isLoopback, overLimit } from "./http";
 import { mcp } from "./mcp";
-import { readerFor, refreshAll } from "./usage";
+import { openDoor } from "./door";
+import { refreshAll } from "./usage";
 
 /**
  * The Worker's front door.
@@ -63,7 +64,7 @@ function providerFor(origin: string): OAuthProvider<Env> {
     // A client that cannot open a browser sends the access key itself as the bearer token.
     resolveExternalToken: async ({ token, env }) => {
       const setup = setupOf(env);
-      if (!setup.ready || !(await sameSecret(token, setup.accessKey))) return null;
+      if (!setup.ready || setup.accessKey === null || !(await sameSecret(token, setup.accessKey))) return null;
       return { props: { via: "key" } satisfies GrantProps, audience: resource };
     },
   });
@@ -103,8 +104,7 @@ export default {
   },
 
   async scheduled(_controller, env, ctx): Promise<void> {
-    const setup = setupOf(env);
-    if (!setup.ready) return;
-    ctx.waitUntil(refreshAll(readerFor(env.OAUTH_KV, setup.tokens)));
+    const door = await openDoor(env);
+    if (door) ctx.waitUntil(refreshAll(door.reader));
   },
 } satisfies ExportedHandler<Env>;
