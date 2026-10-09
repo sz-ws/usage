@@ -9,11 +9,14 @@ passes it on to the usage page that started the sign-in.
 
 Cloudflare opens `/callback` with a one-time `code` (or an `error`) and the
 `state` the usage page made, which names that page's origin. The code is no use
-without a verifier that never leaves the usage page.
+without a verifier that the usage page left in the reader's browser, in a
+cookie only that page is sent.
 
 The page shows the origin and waits. When the reader presses the button, the
 browser posts `code` (or `error`) and `state` to `<origin>/connect/return`.
-The origin has to be `https`, or `http` on `localhost` or `127.0.0.1`.
+The origin has to be `https`, or `http` on `localhost` or `127.0.0.1`. A usage
+page on plain `http` only gets its cookie back from a relay that is also on
+this computer, so that pair is for development with `wrangler dev` on both.
 `error_description` is neither shown nor passed on.
 
 ## What it stores

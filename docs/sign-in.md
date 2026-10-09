@@ -43,7 +43,13 @@ not secrets, so they go in `wrangler.jsonc`:
 Deploy with `pnpm run deploy`, and leave `ANALYTICS_TOKEN` unset.
 
 The address in `CF_OAUTH_CALLBACK_URL` must be exactly the one registered with
-the client, or Cloudflare refuses the sign-in.
+the client, or Cloudflare refuses the sign-in. Open the Worker at that address
+too: started from another of its hostnames, such as `workers.dev` beside a
+custom domain, a sign-in cannot finish.
+
+If the Worker still asks for `ANALYTICS_TOKEN` and `ACCESS_KEY`, one of the two
+variables is not being read: the id is 32 lowercase hex characters, and the
+address has no query string.
 
 ## Connecting
 
@@ -51,10 +57,11 @@ Open the Worker and press the button once for each of the two steps.
 
 1. **Find your accounts.** Cloudflare's page asks for both permissions. Choose
    the accounts you want to see, including the one the Worker runs in. The
-   page reads their names and gives this access back at once.
-2. **Let the page read usage.** Cloudflare's page asks again, this time for
-   Account Analytics Read alone. Choose the same accounts. This is the access
-   the Worker keeps.
+   page reads their names and then asks Cloudflare to end this access. Up to
+   eight accounts are kept.
+2. **Let the page read usage.** Cloudflare's page asks again, this time
+   without Account Settings Read. Choose the same accounts. This is the access
+   the Worker keeps, and Cloudflare lets the Worker renew it.
 
 The permission that reads usage cannot list your accounts, and the one that
 can also shows who an account's members are. So the page asks for that one
@@ -63,27 +70,34 @@ separately and holds it only long enough to learn the names.
 After that, set the day your bill renews, as with any deployment.
 
 If the first step says none of your accounts is running this Worker, wait a
-minute and try again: a new deployment takes about that long to appear in
-Cloudflare's analytics, which is how the Worker recognises its own account.
-If it keeps saying so, name the account yourself with the variable
-`HOME_ACCOUNT_ID`.
+minute and try again. The Worker recognises its own account by finding its own
+requests in that account's analytics, and a request takes about a minute to
+appear there, so the first visit to a new deployment comes too early. If it
+keeps saying so, name the account yourself with the variable
+`HOME_ACCOUNT_ID`. Under `wrangler dev` that variable is always needed.
 
 ## Coming back
 
-A session lasts 30 days from your last visit, so a browser you keep using
-stays signed in. In a new browser, or after 30 days away, press **Sign in
-with Cloudflare**. Cloudflare asks once, for Account Analytics Read; choose
-the account the Worker runs in.
+A session lasts 30 days from the last time you opened the page, so a browser
+you keep using stays signed in. In a new browser, or after 30 days away, press
+**Sign in with Cloudflare**. Cloudflare asks once, for Account Analytics Read;
+choose the account the Worker runs in.
 
 Anyone whose Cloudflare login can read that account's analytics can sign in
-this way. Nobody else can.
+this way, and nobody else can. Someone who signs in sees every account you
+connected, and can connect the page again with accounts of their own choosing.
+
+Taking a person out of the Cloudflare account stops them signing in. It does
+not end a session they already have, which lasts as long as they keep opening
+the page. Signing out clears the session from that browser only.
 
 ## What the Worker keeps
 
-In its KV namespace, in your account:
+In its KV namespace, in your account, beside the readings, history and
+settings every deployment keeps:
 
-- the access that reads analytics, which Cloudflare renews each time the
-  Worker uses it;
+- the access that reads analytics, which the Worker renews with Cloudflare
+  about once an hour while it is in use;
 - the ids and names of the accounts you chose;
 - a key that signs browser sessions.
 
@@ -93,9 +107,9 @@ so D1 databases, KV namespaces and queues appear by their ids.
 
 To withdraw the access, open
 [Manage OAuth authorizations](https://dash.cloudflare.com/?to=/profile/access-management/authorization)
-in your Cloudflare profile and revoke the client. The page then says it needs
-to be connected again, and **Reconnect** takes you through the two steps.
-Your settings and history are kept.
+in your Cloudflare profile and revoke the client. Within the hour the page
+says it needs to be connected again, and **Reconnect** takes you through the
+two steps. Your settings and history are kept.
 
 ## Scripts and agents
 
@@ -122,7 +136,9 @@ and every deployment has an address of its own. A client meant for everyone
 therefore registers one address, the relay in [`relay/`](../relay/README.md):
 a static page that shows where the sign-in is going and, once you confirm,
 passes Cloudflare's one-time code on to your Worker. The code is no use
-without a second value that never leaves your Worker, and your usage and the
-access itself go straight between your Worker and Cloudflare.
+without a second value that your Worker left in your browser and that the
+relay never receives, and your usage and the access itself go straight
+between your Worker and Cloudflare.
 
-A client of your own does not use the relay.
+A client of your own, with a callback on the Worker's own address, does not
+use the relay.
