@@ -130,14 +130,17 @@ describe("what a deployment needs before it serves anything", () => {
     });
   });
 
-  it("names what is missing", () => {
-    expect(setupOf({})).toEqual({ ready: false, missing: ["ANALYTICS_TOKEN", "ACCESS_KEY"], shortKey: false });
-    expect(setupOf({ ANALYTICS_TOKEN: TOKEN, ACCESS_KEY: "   " })).toEqual({
-      ready: false,
-      missing: ["ACCESS_KEY"],
-      shortKey: false,
-    });
-    expect(setupOf({ ACCESS_KEY: KEY })).toEqual({ ready: false, missing: ["ANALYTICS_TOKEN"], shortKey: false });
+  it("names the key a token is missing", () => {
+    const missing = { ready: false, missing: ["ACCESS_KEY"], shortKey: false };
+    expect(setupOf({ ANALYTICS_TOKEN: TOKEN })).toEqual(missing);
+    expect(setupOf({ ANALYTICS_TOKEN: TOKEN, ACCESS_KEY: "   " })).toEqual(missing);
+  });
+
+  it("signs in with Cloudflare through the built-in client when there is no token", () => {
+    const client = { clientId: "602bf8dab95b977ded33458b8d0aa8f6", callbackUrl: "https://usage.sz.ws/callback" };
+    expect(setupOf({})).toEqual({ ready: true, mode: "signin", accessKey: null, client });
+    // A key without a token is the key scripts send to a page that signs in with Cloudflare.
+    expect(setupOf({ ACCESS_KEY: KEY })).toEqual({ ready: true, mode: "signin", accessKey: KEY, client });
   });
 
   it("refuses a key short enough to guess", () => {

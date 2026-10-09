@@ -12,8 +12,9 @@ period, and what will it cost if it does not?
 One Worker in your own Cloudflare account. It reads the account's usage from
 Cloudflare Analytics, compares it with what the plan includes, and projects
 where each product will stand when the period closes. Read it on a page, fetch
-it as JSON, or let an agent ask over MCP. Nothing leaves your account: there is
-no telemetry and no third-party service.
+it as JSON, or let an agent ask over MCP. Your usage goes from Cloudflare to
+your Worker and nowhere else: there is no telemetry, and no server of ours
+that sees it.
 
 ## What it tells you
 
@@ -44,22 +45,18 @@ You need a Cloudflare account on **Workers Paid**. Running this costs nothing
 beyond that: it reads Cloudflare four times a day and keeps the result in KV, a
 small fraction of what the plan already includes.
 
-1. **Press Deploy to Cloudflare.** It creates the KV namespace it needs and
-   asks for two secrets.
-   - `ANALYTICS_TOKEN`: an API token with one permission, **Account Analytics:
-     Read**. [This link](https://dash.cloudflare.com/?to=/:account/api-tokens&permissionGroupKeys=%5B%7B%22key%22%3A%22account_analytics%22%2C%22type%22%3A%22read%22%7D%5D&name=usage)
-     fills in the form. The token shows how much was used and nothing that is
-     stored: it cannot read a database, a KV value or an R2 object, and it
-     cannot change anything.
-   - `ACCESS_KEY`: the password for your page, 24 characters or more.
-     `openssl rand -base64 32` makes one.
-2. **Open the Worker's address** and sign in with the access key.
+1. **Press Deploy to Cloudflare.** It creates the KV namespace the Worker
+   needs. There is no token to create and no password to choose.
+2. **Open the Worker's address and press Continue with Cloudflare**, twice:
+   once to find your accounts, once to let the page read their usage. What
+   you allow shows how much was used and nothing that is stored: it cannot
+   read a database, a KV value or an R2 object, and it cannot change anything.
 3. **Set the day your bill renews.** It is under Manage Account → Billing →
    Subscriptions in the Cloudflare dashboard.
 
-From a clone, with several accounts, or on your own domain:
-[docs/deploy.md](docs/deploy.md). To sign in with Cloudflare instead of
-creating a token and a key: [docs/sign-in.md](docs/sign-in.md).
+What signing in asks for and keeps: [docs/sign-in.md](docs/sign-in.md). With
+an API token instead, from a clone, or on your own domain:
+[docs/deploy.md](docs/deploy.md).
 
 ## Connect an agent
 
@@ -77,7 +74,7 @@ token of its own. Other clients, the tools and the JSON API:
 ## Documentation
 
 - [Deploying and configuring](docs/deploy.md)
-- [Signing in with Cloudflare instead of a token](docs/sign-in.md)
+- [Signing in with Cloudflare](docs/sign-in.md)
 - [Agents, MCP and the JSON API](docs/agents.md)
 - [Alerts through ntfy or a webhook](docs/alerts.md)
 - [How it works, and where the numbers come from](docs/how-it-works.md)

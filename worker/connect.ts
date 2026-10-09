@@ -288,6 +288,14 @@ async function start(visit: ConnectVisit): Promise<Response> {
     console.warn("sign-in cannot return to this address; use https, or http on localhost or 127.0.0.1");
     return problem(visit, "failed", null);
   }
+  // Also development: the relay answers with a form posted from another site,
+  // and a browser only sends this page's cookie along with that over https.
+  if (!isSecure(url) && new URL(visit.client.callbackUrl).protocol === "https:") {
+    console.warn(
+      "sign-in through the relay needs https; on plain http set CF_OAUTH_CLIENT_ID and CF_OAUTH_CALLBACK_URL to a client of your own (docs/development.md)",
+    );
+    return problem(visit, "failed", null);
+  }
 
   const form = await request.formData();
   const next = nextPath(String(form.get("next") ?? ""));

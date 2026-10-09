@@ -46,10 +46,16 @@ export interface OAuthClient {
 }
 
 /**
- * The client every deployment signs in through unless it names its own. Null
- * until one is registered and open to every Cloudflare user.
+ * The client every deployment signs in through unless it names its own:
+ * "Usage", registered with Cloudflare by sz-ws, open to every Cloudflare user
+ * and verified for usage.sz.ws. Its one registered address is the relay
+ * (`relay/` in this repository), which hands Cloudflare's answer on to the
+ * deployment that asked.
  */
-const BUILT_IN_CLIENT: OAuthClient | null = null;
+const BUILT_IN_CLIENT: OAuthClient = {
+  clientId: "602bf8dab95b977ded33458b8d0aa8f6",
+  callbackUrl: "https://usage.sz.ws/callback",
+};
 
 export function oauthClientOf(env: Pick<Env, "CF_OAUTH_CLIENT_ID" | "CF_OAUTH_CALLBACK_URL">): OAuthClient | null {
   const clientId = env.CF_OAUTH_CLIENT_ID?.trim() ?? "";

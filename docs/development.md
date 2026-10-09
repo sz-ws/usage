@@ -3,7 +3,7 @@
 ```sh
 pnpm install
 pnpm demo                        # the page with made-up data, http://localhost:8798
-cp .dev.vars.example .dev.vars   # fill in the two values for the real thing
+cp .dev.vars.example .dev.vars   # uncomment and fill in the two values for the real thing
 pnpm dev                         # builds the page, then http://localhost:8797
 pnpm dev:web                     # Vite on :5183 with hot reload, proxying /api to the Worker
 pnpm check                       # typecheck and tests
@@ -16,8 +16,11 @@ For `pnpm dev:web`, keep `pnpm dev:worker` running and sign in on :8797 first;
 the session cookie is for `localhost`, whatever the port.
 
 To run a deployment that [signs in with Cloudflare](sign-in.md), register
-`http://localhost:8797/connect/callback` with a client of your own and start
-the Worker from a variables file that has no token in it. `--env-file` takes
+`http://localhost:8797/connect/callback` with
+[a client of your own](sign-in.md#a-client-of-your-own) and start the Worker
+from a variables file that has no token in it. The built-in client cannot
+serve a Worker on plain `http`: its answer comes back through a page on
+another site, and a browser only sends the Worker's cookie along over https. `--env-file` takes
 the place of `.dev.vars` for that run:
 
 ```sh

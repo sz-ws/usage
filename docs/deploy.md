@@ -11,18 +11,14 @@ the page compares against are the Workers Paid ones.
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/sz-ws/usage)
 
 The button copies this repository to your GitHub account, creates a KV
-namespace, asks for the two secrets below, and deploys. Later pushes to your
-copy deploy themselves.
+namespace, and deploys. Later pushes to your copy deploy themselves.
 
-| Secret | What to put in it |
-| --- | --- |
-| `ANALYTICS_TOKEN` | A Cloudflare API token with one permission, **Account Analytics: Read**. [Create it with this link](https://dash.cloudflare.com/?to=/:account/api-tokens&permissionGroupKeys=%5B%7B%22key%22%3A%22account_analytics%22%2C%22type%22%3A%22read%22%7D%5D&name=usage), which fills the form in. |
-| `ACCESS_KEY` | The password for your page, 24 characters or more. `openssl rand -base64 32` makes a good one. |
-
-Then open the Worker's address, sign in with the access key, and set the day
-your bill renews. That date is under **Manage Account → Billing →
-Subscriptions** in the Cloudflare dashboard, beside Workers Paid. A token this
-narrow cannot read the subscription, which is why the page asks.
+Then open the Worker's address and press **Continue with Cloudflare** for each
+of the two steps: [Signing in with Cloudflare](sign-in.md) says what each one
+asks for. Last, set the day your bill renews. That date is under **Manage
+Account → Billing → Subscriptions** in the Cloudflare dashboard, beside
+Workers Paid. Access this narrow cannot read the subscription, which is why
+the page asks.
 
 The first reading takes a few seconds. After that the Worker reads again four
 times a day, and whenever you press refresh.
@@ -33,12 +29,30 @@ times a day, and whenever you press refresh.
 git clone https://github.com/sz-ws/usage && cd usage
 pnpm install
 pnpm run deploy                               # creates the KV namespace the first time
+```
+
+Then open the Worker's address and connect it, as above.
+
+## With an API token instead
+
+A deployment that has an API token reads with it and opens with a password,
+and does not sign in with Cloudflare at all. Choose this when only scripts and
+agents will read it, when your account does not allow OAuth applications, or
+when you would rather not sign in through `usage.sz.ws`.
+
+| Secret | What to put in it |
+| --- | --- |
+| `ANALYTICS_TOKEN` | A Cloudflare API token with one permission, **Account Analytics: Read**. [Create it with this link](https://dash.cloudflare.com/?to=/:account/api-tokens&permissionGroupKeys=%5B%7B%22key%22%3A%22account_analytics%22%2C%22type%22%3A%22read%22%7D%5D&name=usage), which fills the form in. |
+| `ACCESS_KEY` | The password for your page, 24 characters or more. `openssl rand -base64 32` makes a good one. |
+
+```sh
 pnpm exec wrangler secret put ANALYTICS_TOKEN
 pnpm exec wrangler secret put ACCESS_KEY
 ```
 
-Until both secrets are set, every page says which one is missing and nothing
-else is served.
+Or add them in the Cloudflare dashboard, under the Worker's **Settings →
+Variables and Secrets**. With a token and no key, every page says the key is
+missing and nothing else is served.
 
 ## More than one account
 

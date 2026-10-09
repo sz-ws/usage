@@ -118,7 +118,7 @@ describe("a deployment that is missing a secret", () => {
     expect(body).not.toContain("ANALYTICS_TOKEN");
     expect(body).not.toContain(TOKEN);
 
-    const api = await send(new Request(`${ORIGIN}/api/state`), env({ ANALYTICS_TOKEN: "" }));
+    const api = await send(new Request(`${ORIGIN}/api/state`), env({ ACCESS_KEY: "" }));
     expect(api.status).toBe(503);
     expect(await api.json()).toEqual({ success: false, data: null, error: "not-set-up" });
   });
