@@ -214,13 +214,14 @@ ${cloudflareForm(next, {}, words.signInButton)}`,
   );
 }
 
-export function connectProblemPage(text: PageText, reason: string): string {
+/** `retry`: where the attempt was headed, and whether it was connecting (`again`) rather than signing in. */
+export function connectProblemPage(text: PageText, reason: string, retry: { next: string; again: boolean }): string {
   return document(
     text,
     text.connect.problemTitle,
     `<h1>${escape(text.connect.problemTitle)}</h1>
 <p class="door-lead">${escape(reason)}</p>
-${cloudflareForm("/", {}, text.connect.tryAgain)}`,
+${cloudflareForm(retry.next, retry.again ? { again: "1" } : {}, text.connect.tryAgain)}`,
   );
 }
 

@@ -17,8 +17,8 @@ import {
 } from "./cloudflare-oauth";
 import { newSessionKey, readerOver } from "./connection";
 import type { Env, OAuthClient } from "./env";
-import { canRead, homeAmong, isHome } from "./home";
-import { html, isForeignCall, json, nextPath, overLimit, redirect, secured } from "./http";
+import { canRead, homeAmong, isHome, readingOf } from "./home";
+import { formTargetOf, html, isForeignCall, json, nextPath, overLimit, redirect, secured } from "./http";
 import { cloudflareSignInPage, connectPage, connectProblemPage } from "./pages";
 import type { Connection, Store } from "./store";
 import type { PageText } from "./text";
@@ -65,6 +65,10 @@ const ATTEMPT_TTL_MS = 10 * 60_000;
 /** Both bounds keep the cookie that carries the list under what a browser accepts. */
 const MAX_ACCOUNTS = 8;
 const MAX_NAME_CHARS = 60;
+/** How many of a login's accounts are asked whether this Worker runs in them: one request each. */
+const MAX_HOME_CANDIDATES = 50;
+/** A longer way back would push the attempt's cookie past what a browser accepts, and the attempt with it. */
+const MAX_NEXT_CHARS = 2_000;
 const MAX_FORM_BYTES = 8_192;
 
 /** One trip to Cloudflare and back: what it is for, and what proves the answer is ours. */
@@ -186,16 +190,35 @@ function isSecure(url: URL): boolean {
   return url.protocol === "https:";
 }
 
-/** A page whose form leads to Cloudflare, which a redirect after a form post has to be allowed to do. */
-function page(body: string, status = 200): Response {
-  return secured(html(body, status), "none", CLOUDFLARE);
+/**
+ * A page whose form leads to Cloudflare. Browsers hold every redirect after a
+ * form post to `form-action`, and Cloudflare can answer without showing a page
+ * (an error, say), which sends the browser straight on to the relay. So the
+ * relay is allowed too.
+ */
+function page(visit: Pick<ConnectVisit, "client" | "url">, body: string, status = 200): Response {
+  const relay = directCallbackPath(visit) === null ? formTargetOf(visit.client.callbackUrl) : null;
+  return secured(html(body, status), "none", relay ? `${CLOUDFLARE} ${relay}` : CLOUDFLARE);
+}
+
+/** Gives a token back to Cloudflare once the response has gone. A refusal is worth a line in the log. */
+function giveBack(visit: Pick<ConnectVisit, "client" | "ctx">, token: string): void {
+  visit.ctx.waitUntil(
+    revokeToken({ clientId: visit.client.clientId, token }).then((revoked) => {
+      if (!revoked) console.warn("cloudflare did not confirm that a token was revoked");
+    }),
+  );
 }
 
 type Problem = keyof PageText["connect"]["problems"];
 
-/** Says what went wrong and offers to start again. Whatever the attempt left in the browser is cleared. */
-function problem(visit: ConnectVisit, reason: Problem, status = 400): Response {
-  const response = page(connectProblemPage(visit.text, visit.text.connect.problems[reason]), status);
+/**
+ * Says what went wrong and offers to start again: the same kind of attempt,
+ * bound for the same page. Whatever the attempt left in the browser is cleared.
+ */
+function problem(visit: ConnectVisit, reason: Problem, attempt: Attempt | null, status = 400): Response {
+  const retry = { next: attempt?.next ?? "/", again: attempt !== null && attempt.step !== "signin" };
+  const response = page(visit, connectProblemPage(visit.text, visit.text.connect.problems[reason], retry), status);
   const secure = isSecure(visit.url);
   response.headers.append("set-cookie", setCookie("connect", null, secure));
   response.headers.append("set-cookie", setCookie("found", null, secure));
@@ -205,7 +228,13 @@ function problem(visit: ConnectVisit, reason: Problem, status = 400): Response {
 /** Sends the browser to Cloudflare for `step`, remembering what will prove the answer. */
 async function leaveFor(visit: ConnectVisit, step: Step, next: string): Promise<Response> {
   const pkce = await createPkce();
-  const attempt: Attempt = { step, nonce: randomNonce(), verifier: pkce.verifier, next, startedAt: Date.now() };
+  const attempt: Attempt = {
+    step,
+    nonce: randomNonce(),
+    verifier: pkce.verifier,
+    next: next.length > MAX_NEXT_CHARS ? "/" : next,
+    startedAt: Date.now(),
+  };
   const address = authorizationUrl({
     clientId: visit.client.clientId,
     redirectUri: visit.client.callbackUrl,
@@ -239,10 +268,10 @@ async function show(visit: ConnectVisit): Promise<Response> {
 
   // Connecting, for the first time or again: the two steps, the first ticked once it is done.
   if (!connection || again || found) {
-    return page(connectPage(text, { again: connection !== null, found: found?.accounts ?? null, next, tooMany }));
+    return page(visit, connectPage(text, { again: connection !== null, found: found?.accounts ?? null, next, tooMany }));
   }
   if (await isSignedIn(request, connection.sessionKey, Date.now())) return secured(redirect(next));
-  return page(cloudflareSignInPage(text, next, tooMany));
+  return page(visit, cloudflareSignInPage(text, next, tooMany));
 }
 
 async function start(visit: ConnectVisit): Promise<Response> {
@@ -257,7 +286,7 @@ async function start(visit: ConnectVisit): Promise<Response> {
   // Only reached in development, on an address a sign-in cannot come back to (a LAN or IPv6 one).
   if (!isReturnOrigin(url.origin)) {
     console.warn("sign-in cannot return to this address; use https, or http on localhost or 127.0.0.1");
-    return problem(visit, "failed");
+    return problem(visit, "failed", null);
   }
 
   const form = await request.formData();
@@ -272,27 +301,28 @@ async function start(visit: ConnectVisit): Promise<Response> {
 /** `find`: learn the accounts, pick out the one this Worker runs in, and show the person it is done. */
 async function find(visit: ConnectVisit, attempt: Attempt, tokens: Tokens): Promise<Response> {
   const nowMs = Date.now();
-  const giveBack = () => visit.ctx.waitUntil(revokeToken({ clientId: visit.client.clientId, token: tokens.accessToken }));
 
   const listed = await accountsSeenBy(tokens.accessToken);
   if (!listed || listed.length === 0) {
-    giveBack();
-    return problem(visit, listed ? "noAccounts" : "failed");
+    giveBack(visit, tokens.accessToken);
+    return problem(visit, listed ? "noAccounts" : "failed", attempt);
   }
 
-  const candidates = listed.slice(0, MAX_ACCOUNTS);
+  // Home is looked for among all of them before the list is cut to what is
+  // kept, or a login with many accounts could be told its Worker runs nowhere.
   const home = await homeAmong(
     visit.env,
     tokens.accessToken,
-    candidates.map((account) => account.id),
+    listed.slice(0, MAX_HOME_CANDIDATES).map((account) => account.id),
     nowMs,
   );
-  giveBack();
-  if (!home) return problem(visit, "notFound");
+  giveBack(visit, tokens.accessToken);
+  if (!home) return problem(visit, "notFound", attempt);
 
-  const accounts = candidates
-    .map(({ id, name }) => ({ id, name: name.slice(0, MAX_NAME_CHARS) }))
-    .sort((left, right) => Number(right.id === home) - Number(left.id === home));
+  const accounts = [...listed]
+    .sort((left, right) => Number(right.id === home) - Number(left.id === home))
+    .slice(0, MAX_ACCOUNTS)
+    .map(({ id, name }) => ({ id, name: name.slice(0, MAX_NAME_CHARS) }));
 
   const connected = (await visit.store.connection()) !== null;
   const secure = isSecure(visit.url);
@@ -306,16 +336,15 @@ async function find(visit: ConnectVisit, attempt: Attempt, tokens: Tokens): Prom
 async function grant(visit: ConnectVisit, attempt: Attempt, tokens: Tokens): Promise<Response> {
   const { env, store, url, ctx, client } = visit;
   const nowMs = Date.now();
-  const giveBack = (token: string) => ctx.waitUntil(revokeToken({ clientId: client.clientId, token }));
 
   const found = foundOf(visit.request, isSecure(url));
   if (!found) {
-    giveBack(tokens.refreshToken ?? tokens.accessToken);
-    return problem(visit, "expired");
+    giveBack(visit, tokens.refreshToken ?? tokens.accessToken);
+    return problem(visit, "expired", attempt);
   }
   if (!tokens.refreshToken) {
-    giveBack(tokens.accessToken);
-    return problem(visit, "notKept");
+    giveBack(visit, tokens.accessToken);
+    return problem(visit, "notKept", attempt);
   }
 
   // The list came through the browser, so home is shown again with this access.
@@ -323,8 +352,8 @@ async function grant(visit: ConnectVisit, attempt: Attempt, tokens: Tokens): Pro
   const allowed =
     (!existing || existing.home === found.home) && (await isHome(env, tokens.accessToken, found.home, nowMs));
   if (!allowed) {
-    giveBack(tokens.refreshToken);
-    return problem(visit, existing && existing.home !== found.home ? "otherAccount" : "notAllowed", 403);
+    giveBack(visit, tokens.refreshToken);
+    return problem(visit, existing && existing.home !== found.home ? "otherAccount" : "notAllowed", attempt, 403);
   }
 
   const readable = await Promise.all(
@@ -344,7 +373,7 @@ async function grant(visit: ConnectVisit, attempt: Attempt, tokens: Tokens): Pro
     broken: false,
   };
   await store.saveConnection(connection);
-  if (existing) giveBack(existing.refreshToken);
+  if (existing) giveBack(visit, existing.refreshToken);
   ctx.waitUntil(refreshAll(readerOver(store, connection)));
 
   return letIn(visit, connection, attempt.next);
@@ -353,9 +382,12 @@ async function grant(visit: ConnectVisit, attempt: Attempt, tokens: Tokens): Pro
 /** `signin`: the person may come in if their own consent reads the account this Worker runs in. */
 async function signIn(visit: ConnectVisit, attempt: Attempt, tokens: Tokens): Promise<Response> {
   const connection = await visit.store.connection();
-  const allowed = connection !== null && (await canRead(tokens.accessToken, connection.home, Date.now()));
-  visit.ctx.waitUntil(revokeToken({ clientId: visit.client.clientId, token: tokens.accessToken }));
-  if (!connection || !allowed) return problem(visit, connection ? "notAllowed" : "expired", 403);
+  const reading = connection ? await readingOf(tokens.accessToken, connection.home, Date.now()) : null;
+  giveBack(visit, tokens.accessToken);
+  if (!connection) return problem(visit, "expired", attempt, 403);
+  // Cloudflare not saying is not Cloudflare saying no: the person is told to try again, not that they may not come in.
+  if (reading === "unanswered") return problem(visit, "failed", attempt, 502);
+  if (reading !== "readable") return problem(visit, "notAllowed", attempt, 403);
   return letIn(visit, connection, attempt.next);
 }
 
@@ -383,8 +415,6 @@ async function answerOf(visit: ConnectVisit): Promise<URLSearchParams | null> {
 }
 
 async function finish(visit: ConnectVisit): Promise<Response> {
-  if (await overLimit(visit.env.SIGNIN_LIMIT, visit.request)) return problem(visit, "tooMany", 429);
-
   const answer = await answerOf(visit);
   if (!answer) return secured(new Response(null, { status: 405 }));
 
@@ -393,11 +423,16 @@ async function finish(visit: ConnectVisit): Promise<Response> {
   const attempt = attemptOf(visit.request, isSecure(visit.url), Date.now());
   const state = decodeState(answer.get("state") ?? "");
   if (!attempt || !state || state.o !== visit.url.origin || state.n !== attempt.nonce) {
-    return problem(visit, "expired");
+    return problem(visit, "expired", attempt);
   }
 
   const code = answer.get("code");
-  if (answer.has("error") || !code) return problem(visit, "declined");
+  if (answer.has("error") || !code) return problem(visit, "declined", attempt);
+
+  // Counted only now, where a request costs a call to Cloudflare, and under the
+  // roomier limit: Cloudflare's code works once, so turning a real answer away
+  // costs the person the whole trip.
+  if (await overLimit(visit.env.API_LIMIT, visit.request)) return problem(visit, "tooMany", attempt, 429);
 
   let tokens: Tokens;
   try {
@@ -410,7 +445,7 @@ async function finish(visit: ConnectVisit): Promise<Response> {
   } catch (error) {
     if (!(error instanceof OAuthError)) throw error;
     console.warn("cloudflare sign-in failed", error.code, error.status);
-    return problem(visit, error.reconnectNeeded ? "expired" : "failed", error.retryable ? 502 : 400);
+    return problem(visit, error.reconnectNeeded ? "expired" : "failed", attempt, error.retryable ? 502 : 400);
   }
 
   if (attempt.step === "find") return find(visit, attempt, tokens);

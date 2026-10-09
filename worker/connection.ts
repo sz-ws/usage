@@ -39,7 +39,9 @@ async function renew(store: Store, connection: Connection, nowMs: number): Promi
     // the stale one rather than the grant a dead one.
     const latest = await store.connection();
     if (latest && !latest.broken && latest.refreshToken !== connection.refreshToken) return latest.accessToken;
-    if (latest?.connectedAt === connection.connectedAt) await store.saveConnection({ ...connection, broken: true });
+    // Noted against this token only: if a newer one is stored that this
+    // reader cannot see yet, the note does not apply to it.
+    await store.endConnection(connection.refreshToken);
     throw new ReconnectNeeded();
   }
 
