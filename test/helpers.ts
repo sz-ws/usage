@@ -1,10 +1,12 @@
-/** A KV namespace that lives in a Map, for the parts of the Worker that only get and put JSON. */
+/** A KV namespace that lives in a Map, for the parts of the Worker that only get and put. */
 export function fakeKv(initial: Record<string, unknown> = {}) {
   const data = new Map(Object.entries(initial).map(([key, value]) => [key, JSON.stringify(value)]));
   const kv = {
-    get: async (key: string) => {
+    // As KV does: the text as it was put, unless JSON is asked for.
+    get: async (key: string, type?: string | { type?: string }) => {
       const value = data.get(key);
-      return value === undefined ? null : JSON.parse(value);
+      if (value === undefined) return null;
+      return (typeof type === "string" ? type : type?.type) === "json" ? JSON.parse(value) : value;
     },
     put: async (key: string, value: string) => {
       data.set(key, value);

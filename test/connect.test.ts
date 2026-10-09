@@ -5,7 +5,7 @@ import { app } from "../worker/app";
 import { decodeState } from "../worker/cloudflare-oauth";
 import { ReconnectNeeded, accessTokenOf } from "../worker/connection";
 import { setupOf, type Env } from "../worker/env";
-import { canRead, homeAmong, isHome, sightingOf } from "../worker/home";
+import { canRead, homeAmong, isHome, pacing, readingOf, sightingOf } from "../worker/home";
 import { Store, type Connection } from "../worker/store";
 import { fakeContext, fakeFetch, fakeKv } from "./helpers";
 
@@ -83,7 +83,8 @@ function cloudflare(world: World = WORLD) {
       const { account, version } = body.variables;
       if (version === undefined) return new Response("no readings in this test", { status: 500 });
       if (!(world.reads[bearer(request)] ?? []).includes(account)) {
-        return Response.json({ data: null, errors: [{ message: "not authorized for that account" }] });
+        // As Cloudflare answers an access that may not read the account.
+        return Response.json({ data: null, errors: [{ message: "authorization denied", extensions: { code: "authz" } }] });
       }
       const ran = account === HOME && version === VERSION ? [{ dimensions: { scriptVersion: version } }] : [];
       return Response.json({ data: { viewer: { accounts: [{ ran }] } }, errors: null });
@@ -162,6 +163,8 @@ function connection(overrides: Partial<Connection> = {}): Connection {
 
 beforeEach(() => {
   kv = fakeKv();
+  // No waiting between attempts in tests; the attempts themselves still happen.
+  pacing.askAgainAfterMs = [0, 0];
   vi.spyOn(console, "error").mockImplementation(() => undefined);
   vi.spyOn(console, "warn").mockImplementation(() => undefined);
 });
@@ -224,6 +227,16 @@ describe("before anyone has connected", () => {
     expect(body).toContain('name="next" value="/?account=Acme"');
     expect(body).not.toContain('name="key"');
     expect(response.headers.get("content-security-policy")).toContain("form-action 'self' https://dash.cloudflare.com");
+  });
+
+  it("lets a form's redirects reach the relay, since Cloudflare can pass the browser on without a page of its own", async () => {
+    const policyOf = async (bindings: () => Env) =>
+      (await browser(bindings).send("/signin")).headers.get("content-security-policy") ?? "";
+
+    expect(await policyOf(env)).toContain(`form-action 'self' https://dash.cloudflare.com ${RELAY}`);
+    // A callback on the Worker's own address is already covered by 'self'.
+    const direct = await policyOf(() => env({ CF_OAUTH_CALLBACK_URL: `${ORIGIN}/connect/callback` }));
+    expect(direct).toMatch(/form-action 'self' https:\/\/dash\.cloudflare\.com$/);
   });
 
   it("leaves for Cloudflare asking only to find the accounts, and remembers the attempt in a cookie", async () => {
@@ -352,6 +365,24 @@ describe("connecting", () => {
     expect(kv.keys()).toEqual([]);
   });
 
+  it("finds the home account among many, and keeps it when the list is cut to what a cookie holds", async () => {
+    // Eleven other accounts listed before the one this Worker runs in.
+    const others = Array.from({ length: 11 }, (_, index) => (index + 4).toString(16).repeat(32));
+    cloudflare({ ...WORLD, reads: { ...WORLD.reads, "A-find": [...others, HOME] } });
+    const visitor = browser();
+    const between = await visitor.comeBack(await visitor.start(), { code: "code-find" });
+    await visitor.settled();
+
+    expect(between.status).toBe(303);
+    const found = JSON.parse(Buffer.from(visitor.jar.get("__Host-usage-found") ?? "", "base64url").toString()) as {
+      home: string;
+      accounts: { id: string }[];
+    };
+    expect(found.home).toBe(HOME);
+    expect(found.accounts).toHaveLength(8);
+    expect(found.accounts[0]?.id).toBe(HOME);
+  });
+
   it("does not take the browser's word for which account is home", async () => {
     const cf = cloudflare();
     const visitor = browser();
@@ -471,6 +502,84 @@ describe("an answer that is not this browser's", () => {
   });
 });
 
+describe("starting again after a problem", () => {
+  beforeEach(async () => {
+    await new Store(kv.kv).saveConnection(connection());
+  });
+
+  it("offers the connecting that failed, not a sign-in, and keeps where it was headed", async () => {
+    cloudflare({ ...WORLD, reads: { ...WORLD.reads, "A-find": [OTHER] } });
+    const visitor = browser();
+    const leaving = await visitor.start({ again: "1", next: "/authorize?x=1" });
+    expect(scopeOf(leaving)).toContain("account-settings.read");
+
+    const body = await (await visitor.comeBack(leaving, { code: "code-find" })).text();
+    expect(body).toContain("Sign-in did not finish");
+    expect(body).toContain('name="again" value="1"');
+    expect(body).toContain('name="next" value="/authorize?x=1"');
+  });
+
+  it("offers the sign-in that failed, bound for the same page", async () => {
+    cloudflare();
+    const visitor = browser();
+    const answer = await visitor.comeBack(await visitor.start({ next: "/authorize?x=1" }), { code: "code-stranger" });
+    const body = await answer.text();
+
+    expect(answer.status).toBe(403);
+    expect(body).toContain('name="next" value="/authorize?x=1"');
+    expect(body).not.toContain('name="again"');
+  });
+
+  it("drops a way back too long for the cookie to carry, rather than the whole attempt", async () => {
+    cloudflare();
+    const visitor = browser();
+    const fits = await visitor.start({ next: `/${"a".repeat(1_999)}` });
+    const carried = fits.headers.getSetCookie().find((entry) => entry.startsWith("__Host-usage-connect=")) ?? "";
+    expect(carried.length).toBeLessThan(4_096);
+
+    const leaving = await visitor.start({ next: `/${"a".repeat(2_000)}` });
+    const done = await visitor.comeBack(leaving, { code: "code-signin" });
+    expect(done.status).toBe(303);
+    expect(done.headers.get("location")).toBe("/");
+  });
+
+  it("counts an answer under the roomier limit, and only one that would cost a call to Cloudflare", async () => {
+    const cf = cloudflare();
+    const refuse = { limit: async () => ({ success: false }) } as unknown as RateLimit;
+    const visitor = browser();
+    const leaving = await visitor.start();
+    const state = new URL(leaving.headers.get("location") ?? "").searchParams.get("state") ?? "";
+    const cookie = [...visitor.jar].map(([name, value]) => `${name}=${value}`).join("; ");
+
+    const answer = (bindings: Env, fields: Record<string, string>) =>
+      app.fetch(
+        new Request(`${ORIGIN}/connect/return`, {
+          method: "POST",
+          body: new URLSearchParams(fields),
+          headers: {
+            "content-type": "application/x-www-form-urlencoded",
+            "cf-connecting-ip": "203.0.113.7",
+            "sec-fetch-site": "cross-site",
+            "sec-fetch-mode": "navigate",
+            cookie,
+          },
+        }) as Parameters<typeof app.fetch>[0],
+        bindings,
+        fakeContext().ctx,
+      );
+
+    // An answer that is not this browser's is turned away before it is counted.
+    expect((await answer(env({ API_LIMIT: refuse }), { state: "not-ours", code: "code-signin" })).status).toBe(400);
+
+    const asked = cf.calls.length;
+    expect((await answer(env({ API_LIMIT: refuse }), { state, code: "code-signin" })).status).toBe(429);
+    expect(cf.calls.length).toBe(asked);
+
+    // The tighter limit on starting is not held against an answer: Cloudflare's code works once.
+    expect((await answer(env({ SIGNIN_LIMIT: refuse }), { state, code: "code-signin" })).status).toBe(303);
+  });
+});
+
 describe("signing in to a connected page", () => {
   beforeEach(async () => {
     await new Store(kv.kv).saveConnection(connection());
@@ -503,6 +612,24 @@ describe("signing in to a connected page", () => {
     expect(visitor.jar.has("__Host-usage-session")).toBe(false);
     expect(cf.revoked).toEqual(["A-stranger"]);
     expect((await visitor.send("/")).status).toBe(302);
+  });
+
+  it("asks the person to try again, rather than turning them away, when Cloudflare does not say", async () => {
+    const cf = cloudflare();
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+      const address = input instanceof Request ? input.url : String(input);
+      return address.startsWith(`${API}/graphql`) ? new Response("bad gateway", { status: 502 }) : cf.fetcher(input, init);
+    });
+    const visitor = browser();
+    const answer = await visitor.comeBack(await visitor.start(), { code: "code-signin" });
+    await visitor.settled();
+    const body = await answer.text();
+
+    expect(answer.status).toBe(502);
+    expect(body).toContain("Cloudflare did not answer. Try again in a moment.");
+    expect(body).not.toContain("cannot read this Worker");
+    expect(visitor.jar.has("__Host-usage-session")).toBe(false);
+    expect(cf.revoked).toEqual(["A-signin"]);
   });
 
   it("shows the sign-in page to a visitor and passes a signed-in owner through", async () => {
@@ -613,6 +740,31 @@ describe("keeping the grant usable", () => {
     expect(await accessTokenOf(store, Date.now())).toBe("A-reconnected");
     expect((await store.connection())?.refreshToken).toBe("R-9");
   });
+
+  it("does not lose a newer token to a reader that was refused with an old one", async () => {
+    const store = new Store(kv.kv);
+    await store.saveConnection(connection({ refreshToken: "R-new", accessToken: "A-new" }));
+
+    // A reader elsewhere, still holding the copy from before the renewal, is refused by Cloudflare.
+    await store.endConnection("R-old");
+    expect(await store.connection()).toMatchObject({ broken: false, refreshToken: "R-new", accessToken: "A-new" });
+
+    await store.endConnection("R-new");
+    expect((await store.connection())?.broken).toBe(true);
+    // Connecting again brings a token the note does not name.
+    await store.saveConnection(connection({ refreshToken: "R-next" }));
+    expect((await store.connection())?.broken).toBe(false);
+  });
+
+  it("notes the refusal without writing the token down again", async () => {
+    cloudflare();
+    const store = new Store(kv.kv);
+    await store.saveConnection(connection({ accessExpiresAt: 0 }));
+    await expect(accessTokenOf(store, Date.now())).rejects.toBeInstanceOf(ReconnectNeeded);
+
+    expect(kv.read<Connection>("usage:connection")).toMatchObject({ broken: false, refreshToken: "R-0" });
+    expect(kv.keys()).toContain("usage:connection:ended");
+  });
 });
 
 describe("recognising the account this Worker runs in", () => {
@@ -622,9 +774,50 @@ describe("recognising the account this Worker runs in", () => {
     cloudflare();
     expect(await sightingOf("A-grant", HOME, VERSION, nowMs)).toBe("yes");
     expect(await sightingOf("A-grant", OTHER, VERSION, nowMs)).toBe("no");
-    expect(await sightingOf("A-grant", HIDDEN, VERSION, nowMs)).toBe("unreadable");
+    expect(await sightingOf("A-grant", HIDDEN, VERSION, nowMs)).toBe("denied");
     expect(await canRead("A-grant", OTHER, nowMs)).toBe(true);
     expect(await canRead("A-grant", HIDDEN, nowMs)).toBe(false);
+  });
+
+  it("tells Cloudflare saying no from Cloudflare not saying", async () => {
+    cloudflare();
+    expect(await readingOf("A-grant", HOME, nowMs)).toBe("readable");
+    expect(await readingOf("A-grant", HIDDEN, nowMs)).toBe("denied");
+
+    // An access Cloudflare does not know (yet) is answered like this, which says nothing about the account.
+    vi.stubGlobal("fetch", async () =>
+      Response.json({ success: false, errors: [{ code: 10000, message: "Authentication error" }] }, { status: 401 }),
+    );
+    expect(await readingOf("A-grant", HOME, nowMs)).toBe("unanswered");
+    // An error that is not a refusal does not count as one either.
+    vi.stubGlobal("fetch", async () => Response.json({ data: null, errors: [{ message: "internal error" }] }));
+    expect(await readingOf("A-grant", HOME, nowMs)).toBe("unanswered");
+  });
+
+  it("asks again after a non-answer and takes the answer that comes, but takes a refusal at once", async () => {
+    const cf = cloudflare();
+    let asked = 0;
+    let silences = 0;
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+      asked += 1;
+      if (silences === 0) return cf.fetcher(input, init);
+      silences -= 1;
+      return new Response("bad gateway", { status: 502 });
+    });
+
+    silences = 1;
+    expect(await readingOf("A-grant", HOME, nowMs)).toBe("readable");
+    expect(asked).toBe(2);
+
+    silences = 2;
+    expect(await isHome({ CF_VERSION_METADATA: { id: VERSION } }, "A-grant", HOME, nowMs)).toBe(true);
+    // Three silences in a row is where it stops asking.
+    silences = 3;
+    expect(await readingOf("A-grant", HOME, nowMs)).toBe("unanswered");
+
+    asked = 0;
+    expect(await readingOf("A-grant", HIDDEN, nowMs)).toBe("denied");
+    expect(asked).toBe(1);
   });
 
   it("is unreadable when Cloudflare does not answer or answers something else", async () => {

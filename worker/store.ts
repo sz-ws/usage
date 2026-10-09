@@ -14,6 +14,7 @@ import type { AccountSettings, ResourceNames, Settings, Snapshot, StoredAlerts, 
  *   usage:alerted:<account>   what the owner has already been told this billing period
  *   usage:alerted:tokens      which token problems have been reported
  *   usage:connection          the Cloudflare sign-in the Worker reads with, when it has no API token
+ *   usage:connection:ended    which refresh token Cloudflare has refused, as a digest
  */
 
 const PREFIX = "usage:";
@@ -51,8 +52,14 @@ export interface Connection {
   connectedAt: string;
   /** Browser sessions are signed with this, and agents' grants are tied to it. */
   sessionKey: string;
-  /** Cloudflare said the grant is gone: the owner has to connect again. */
+  /** Cloudflare said the grant is gone: the owner has to connect again. Worked out on reading, see `endConnection`. */
   broken: boolean;
+}
+
+/** Stands for a refresh token where the token itself should not be written down a second time. */
+async function digestOf(token: string): Promise<string> {
+  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+  return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 export interface NamesRecord {
@@ -77,8 +84,23 @@ export class Store {
   }
 
   async connection(): Promise<Connection | null> {
-    const stored = await this.kv.get<Connection>(`${PREFIX}connection`, "json");
-    return stored?.v === 1 ? stored : null;
+    const [stored, ended] = await Promise.all([
+      this.kv.get<Connection>(`${PREFIX}connection`, "json"),
+      this.kv.get(`${PREFIX}connection:ended`),
+    ]);
+    if (stored?.v !== 1) return null;
+    return { ...stored, broken: stored.broken || ended === (await digestOf(stored.refreshToken)) };
+  }
+
+  /**
+   * Records that Cloudflare refused `refreshToken`. Kept apart from the
+   * connection itself: KV shows a write elsewhere up to a minute late, so the
+   * reader that was refused may be holding an old copy, and writing that copy
+   * back would throw away the newer token another reader has since saved. A
+   * note about a token that is no longer the stored one changes nothing.
+   */
+  async endConnection(refreshToken: string): Promise<void> {
+    await this.kv.put(`${PREFIX}connection:ended`, await digestOf(refreshToken));
   }
 
   async saveConnection(connection: Connection): Promise<void> {
