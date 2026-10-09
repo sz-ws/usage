@@ -16,6 +16,7 @@
 - **要多付多少。** 依 Cloudflare 的牌價算出超額的金額。
 - **是誰在用。** 每個數字都拆到 Worker、資料庫、namespace、bucket、queue 或模型。
 - **哪裡變了。** 這週請求變成三倍的 Worker；再 40 天就會超過額度的儲存。
+- **什麼時候該看。** 有產品照目前速度會超額時，透過 ntfy 或 webhook 通知你。
 - **多個帳號**，一個帳號一個分頁。
 - **九種語言。**
 
@@ -55,6 +56,7 @@ Worker 會請你登入並決定要不要允許，agent 拿到的是它自己的�
 
 - [部署與設定](../deploy.md)
 - [Agent、MCP 與 JSON API](../agents.md)
+- [透過 ntfy 或 webhook 的警告](../alerts.md)
 - [運作方式，以及數字的來源](../how-it-works.md)
 - [開發，以及新增語言](../development.md)
 

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { rangeDays } from "../shared/dates";
 import type { AppState, Snapshot } from "../shared/types";
 import { issueSession, keyFingerprint } from "../worker/access";
+import { NO_ALERTS } from "../worker/alerts";
 import { app } from "../worker/app";
 import type { Env } from "../worker/env";
 import type { AccountReport } from "../worker/report";
@@ -279,6 +280,7 @@ describe("the owner, signed in", () => {
     expect(state).toEqual({
       accounts: [{ id: ACCOUNT, name: "Personal", renewalDay: null, snapshot: null, names: {} }],
       problems: [],
+      alerts: NO_ALERTS,
     });
     expect(JSON.stringify(state)).not.toContain(TOKEN);
   });
@@ -295,7 +297,7 @@ describe("the owner, signed in", () => {
     vi.stubGlobal("fetch", async () => new Response(null, { status: 403 }));
     kv = fakeKv();
     const refused = (await (await send(await signedIn("/api/state"))).json()) as AppState;
-    expect(refused).toEqual({ accounts: [], problems: [{ token: 1, status: 403 }] });
+    expect(refused).toEqual({ accounts: [], problems: [{ token: 1, status: 403 }], alerts: NO_ALERTS });
   });
 
   it("sets the billing day, within a month's days, for an account it has", async () => {

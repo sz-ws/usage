@@ -319,6 +319,41 @@ export const zhTW: Messages = {
     save: "儲存",
   },
 
+  alerts: {
+    title: "警告",
+    lead: "每天檢查四次。同一個產品每變嚴重一級只通知一次，不會每次檢查都通知。",
+    when: "這些時候通知我",
+    events: {
+      willExceed: "有產品照目前速度這期會超額",
+      exceeded: "有產品已經超額",
+      watch: "有產品照目前速度會用到額度的 80%",
+      token: "API token 失效",
+    },
+    ntfy: {
+      url: "ntfy topic 位址",
+      hint: "例如 https://ntfy.sh/只有你知道的名稱。知道 topic 的人都讀得到。",
+      token: "存取 token",
+    },
+    webhook: {
+      url: "Webhook 位址",
+      hint: "有事要通知你的時候，會收到一則 JSON POST。",
+      secret: "簽章密鑰",
+    },
+    optional: "選填",
+    kept: "已儲存，輸入新的就會取代。",
+    save: "儲存",
+    saved: "已儲存。",
+    notSaved: "警告設定沒存成功，請再試一次。",
+    invalidAddress: ({ channel }) => `${channel} 的位址要以 https:// 開頭；ntfy 的結尾要是 topic 名稱。`,
+    test: "送一則測試",
+    noChannel: "先填 ntfy topic 或 webhook 並儲存。",
+    delivered: ({ channel }) => `${channel}：已送達。`,
+    failed: ({ channel, status }) => (status === null ? `${channel}：連不上。` : `${channel}：被拒絕（${status}）。`),
+    close: "關閉",
+    testTitle: "來自用量頁面的測試",
+    testBody: "警告會送到這裡。",
+  },
+
   tokenProblem: ({ token, status }) => {
     if (status === null) return `用第 ${token} 個 API token 連不上 Cloudflare。`;
     if (status === 200) return `第 ${token} 個 API token 可以用，但看不到任何帳號。`;

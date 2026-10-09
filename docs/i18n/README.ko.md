@@ -16,6 +16,7 @@ Cloudflare 계정 안에 배포하는 Worker 하나입니다. Cloudflare Analyti
 - **예상 요금.** Cloudflare 공식 가격표 기준의 초과 금액(달러).
 - **누가 쓰는지.** 각 수치를 Worker, 데이터베이스, 네임스페이스, 버킷, 큐 또는 모델별로 보여 줍니다.
 - **무엇이 바뀌었는지.** 이번 주에 요청이 세 배로 늘어난 Worker. 40일 뒤 기본 제공량을 넘을 스토리지.
+- **언제 볼지.** 제품이 초과 추세일 때 ntfy 또는 webhook으로 알림을 보냅니다.
 - **여러 계정**, 계정마다 탭 하나.
 - **아홉 개 언어.**
 
@@ -55,6 +56,7 @@ Worker가 로그인하고 허용하라고 요청합니다. 그러면 에이전�
 
 - [배포와 설정](../deploy.md)
 - [에이전트, MCP, JSON API](../agents.md)
+- [ntfy 또는 webhook으로 받는 알림](../alerts.md)
 - [작동 방식과 숫자의 출처](../how-it-works.md)
 - [개발과 언어 추가](../development.md)
 

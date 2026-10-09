@@ -72,6 +72,7 @@ const SAMPLE: Record<string, unknown> = {
   detail: "Authentication error",
   token: 2,
   status: 403,
+  channel: "ntfy",
 };
 
 /** `day` is a day of the month in two places and an already written date everywhere else. */

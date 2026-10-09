@@ -16,6 +16,7 @@ Un Worker en tu propia cuenta de Cloudflare. Lee el uso de la cuenta desde Cloud
 - **Cuánto costará.** El exceso en dólares, según las listas de precios de Cloudflare.
 - **Quién lo usa.** Cada cifra por Worker, base de datos, espacio de nombres, bucket, cola o modelo.
 - **Qué ha cambiado.** Un Worker cuyas solicitudes se triplicaron esta semana. Un almacenamiento que superará su límite incluido dentro de 40 días.
+- **Cuándo revisarlo.** Una notificación por ntfy o webhook cuando un producto vaya camino de superar su límite incluido.
 - **Varias cuentas**, una pestaña para cada una.
 - **Nueve idiomas.**
 
@@ -55,6 +56,7 @@ Los siguientes documentos están en inglés.
 
 - [Despliegue y configuración](../deploy.md)
 - [Agentes, MCP y la API JSON](../agents.md)
+- [Alertas por ntfy o webhook](../alerts.md)
 - [Cómo funciona y de dónde salen las cifras](../how-it-works.md)
 - [Desarrollo y cómo añadir un idioma](../development.md)
 

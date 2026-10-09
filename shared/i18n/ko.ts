@@ -362,6 +362,43 @@ export const ko: Messages = {
     save: "저장",
   },
 
+  alerts: {
+    title: "알림",
+    lead: "하루 네 번 확인합니다. 제품 상태가 나빠질 때마다 한 번만 알리고, 확인할 때마다 알리지는 않습니다.",
+    when: "알림을 받을 경우",
+    events: {
+      willExceed: "어떤 제품이 이번 기간에 기본 제공량을 넘을 추세입니다.",
+      exceeded: "어떤 제품이 기본 제공량을 넘었습니다.",
+      watch: "어떤 제품이 기본 제공량의 80% 선을 넘을 추세입니다.",
+      token: "어떤 API 토큰이 작동을 멈춥니다.",
+    },
+    ntfy: {
+      url: "ntfy 토픽 주소",
+      hint: "예: https://ntfy.sh/a-name-only-you-know. 토픽을 아는 사람은 누구나 읽을 수 있습니다.",
+      token: "액세스 토큰",
+    },
+    webhook: {
+      url: "Webhook 주소",
+      hint: "알릴 일이 있을 때 JSON POST 요청을 받습니다.",
+      secret: "서명 비밀키",
+    },
+    optional: "선택",
+    kept: "저장되어 있습니다. 새로 입력하면 교체됩니다.",
+    save: "저장",
+    saved: "저장되었습니다.",
+    notSaved: "알림 설정을 저장하지 못했습니다. 다시 시도하세요.",
+    invalidAddress: ({ channel }) =>
+      `${channel} 주소는 https://로 시작해야 하며, ntfy의 경우 토픽 이름으로 끝나야 합니다.`,
+    test: "테스트 보내기",
+    noChannel: "ntfy 토픽 주소나 Webhook 주소를 추가하고 먼저 저장하세요.",
+    delivered: ({ channel }) => `${channel}: 전달되었습니다.`,
+    failed: ({ channel, status }) =>
+      status === null ? `${channel}: 연결할 수 없습니다.` : `${channel}: 서버가 거부했습니다 (${status}).`,
+    close: "닫기",
+    testTitle: "사용량 페이지에서 보낸 테스트",
+    testBody: "알림이 여기로 도착합니다.",
+  },
+
   tokenProblem: ({ token, status }) => {
     if (status === null) return `${token}번째 API 토큰으로 Cloudflare에 연결할 수 없습니다.`;
     if (status === 200) return `${token}번째 API 토큰은 작동하지만 계정이 보이지 않습니다.`;

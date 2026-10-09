@@ -1,5 +1,6 @@
 import type { AccountSettings, AccountState, AppState, Snapshot } from "../shared/types";
 import { directoryOf } from "./accounts";
+import { alertAccount, alertTokens, alertsView } from "./alerts";
 import { readUsage } from "./cloudflare";
 import { readNames } from "./names";
 import { shape } from "./shape";
@@ -103,18 +104,29 @@ export async function readState(reader: Reader, nowMs: number): Promise<AppState
     }),
   );
 
-  return { accounts, problems: directory.problems };
+  return { accounts, problems: directory.problems, alerts: alertsView(settings.alerts) };
 }
 
-/** Keeps the stored readings current, so the page opens on recent numbers and no day ages out unseen. */
+/**
+ * Keeps the stored readings current, so the page opens on recent numbers and no
+ * day ages out unseen, and tells the owner what the new readings changed.
+ */
 export async function refreshAll(reader: Reader): Promise<void> {
-  const directory = await directoryOf(reader.store, reader.tokens, Date.now(), { fresh: true });
+  const nowMs = Date.now();
+  const directory = await directoryOf(reader.store, reader.tokens, nowMs, { fresh: true });
+  const settings = await reader.store.settings();
 
   for (const account of directory.accounts) {
     try {
-      await refreshAccount(reader, account, await reader.store.snapshot(account.id));
+      const snapshot = await refreshAccount(reader, account, await reader.store.snapshot(account.id));
+      const renewalDay = renewalDayOf(settings.accounts, account.id);
+      await alertAccount(reader.store, { id: account.id, name: account.name, renewalDay }, snapshot, nowMs);
     } catch (error) {
       console.error("scheduled refresh failed", account.id, error);
     }
   }
+
+  await alertTokens(reader.store, directory.problems, nowMs).catch((error: unknown) => {
+    console.error("token alert failed", error);
+  });
 }

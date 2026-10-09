@@ -135,10 +135,17 @@
 }
 
 /* The two languages as plain words: the one in use is the darker of the two. */
+/* What is set once and left: alerts and the language. */
+.topbar-more {
+  display: flex;
+  gap: 0.15rem;
+  align-items: center;
+  margin-left: auto;
+}
+
 .lang {
   position: relative;
   display: inline-flex;
-  margin-left: auto;
 }
 
 /* The chevron: the control is the browser's own menu with its arrow replaced. */
@@ -198,7 +205,7 @@
     justify-self: start;
   }
 
-  .lang {
+  .topbar-more {
     grid-row: 2;
     grid-column: 3;
     justify-self: end;

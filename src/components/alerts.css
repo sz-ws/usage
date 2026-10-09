@@ -1,0 +1,198 @@
+/* The opener sits in the top bar as a quiet word, like the language menu beside it. */
+.alerts-open {
+  padding: 0.35rem 0.6rem;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: var(--text-small);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast),
+    background-color var(--duration-fast);
+}
+
+.alerts-open:hover {
+  background: var(--color-wash);
+  color: var(--color-heading);
+}
+
+.alerts {
+  width: min(30rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  color: var(--color-body);
+  box-shadow:
+    0 0 0 1px var(--color-hairline),
+    0 24px 60px -20px rgb(52 52 51 / 0.35);
+  overflow-y: auto;
+}
+
+.alerts::backdrop {
+  background: rgb(52 52 51 / 0.28);
+}
+
+.alerts form {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem 1.6rem 1.4rem;
+}
+
+.alerts h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.alerts-lead {
+  margin: -0.5rem 0 0;
+  font-size: var(--text-small);
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+.alerts fieldset {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.alerts legend {
+  margin-bottom: 0.5rem;
+  padding: 0;
+  font-size: var(--text-small);
+  font-weight: 560;
+  color: var(--color-heading);
+}
+
+.alerts-check {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  font-size: var(--text-small);
+  cursor: pointer;
+}
+
+.alerts-check input {
+  flex: none;
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0;
+  accent-color: var(--color-heading);
+  transform: translateY(0.12rem);
+}
+
+.alerts-field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.alerts-field span {
+  font-size: var(--text-small);
+  font-weight: 560;
+  color: var(--color-heading);
+}
+
+.alerts-field em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.alerts-field small {
+  font-size: 0.78rem;
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}
+
+.alerts-field input {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--color-bg);
+  box-shadow: inset 0 0 0 1px var(--color-hairline-strong);
+  color: var(--color-heading);
+  font: inherit;
+  font-size: var(--text-small);
+}
+
+.alerts-field input:hover {
+  box-shadow: inset 0 0 0 1px var(--color-muted);
+}
+
+.alerts-field input::placeholder {
+  color: var(--color-faint);
+}
+
+.alerts-note {
+  min-height: 1.3rem;
+  font-size: var(--text-small);
+  color: var(--ok-ink);
+}
+
+.alerts-note[data-bad] {
+  color: var(--over-ink);
+}
+
+.alerts-note p {
+  margin: 0;
+}
+
+.alerts-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.alerts-actions button {
+  padding: 0.5rem 0.95rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--color-wash);
+  color: var(--color-heading);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: 560;
+  cursor: pointer;
+  transition: background-color var(--duration-fast);
+}
+
+.alerts-actions button:hover:not(:disabled) {
+  background: var(--color-wash-strong);
+}
+
+.alerts-actions button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.alerts-actions button:disabled {
+  color: var(--color-muted);
+  cursor: default;
+}
+
+.alerts-actions .alerts-primary {
+  background: var(--color-heading);
+  color: var(--color-bg);
+}
+
+.alerts-actions .alerts-primary:hover:not(:disabled) {
+  background: #1f1f1e;
+}
+
+.alerts-actions .alerts-primary:disabled {
+  background: var(--color-muted);
+  color: var(--color-bg);
+}
+
+.alerts-actions .alerts-close {
+  margin-left: auto;
+  background: none;
+  font-weight: 400;
+  color: var(--color-muted);
+}

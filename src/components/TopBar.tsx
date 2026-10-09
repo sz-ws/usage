@@ -1,7 +1,8 @@
 import { formatAgo } from "../../shared/format";
 import type { Tone } from "../../shared/insights";
-import type { AccountState } from "../../shared/types";
+import type { AccountState, AlertsView } from "../../shared/types";
 import { useMessages } from "../locale";
+import { Alerts } from "./Alerts";
 import { LanguageSwitch } from "./LanguageSwitch";
 import "./topbar.css";
 
@@ -14,9 +15,11 @@ interface Props {
   nowMs: number;
   refreshing: boolean;
   onRefresh: () => void;
+  alerts: AlertsView;
+  onAlerts: (alerts: AlertsView) => void;
 }
 
-export function TopBar({ accounts, tones, current, onAccount, nowMs, refreshing, onRefresh }: Props) {
+export function TopBar({ accounts, tones, current, onAccount, nowMs, refreshing, onRefresh, alerts, onAlerts }: Props) {
   const m = useMessages();
   const fetchedAt = current.snapshot ? Date.parse(current.snapshot.fetchedAt) : null;
 
@@ -66,7 +69,10 @@ export function TopBar({ accounts, tones, current, onAccount, nowMs, refreshing,
         </button>
       </div>
 
-      <LanguageSwitch />
+      <div className="topbar-more">
+        <Alerts alerts={alerts} onSaved={onAlerts} />
+        <LanguageSwitch />
+      </div>
     </header>
   );
 }

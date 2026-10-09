@@ -256,6 +256,36 @@ export interface Messages {
     save: string;
   };
 
+  /** Choosing what to be told about, and where: the dialog behind the top bar's button. */
+  alerts: {
+    /** The button that opens the dialog, and the dialog's heading. */
+    title: string;
+    lead: string;
+    /** Heads the list of things to be told about; each `events` entry finishes its sentence. */
+    when: string;
+    events: Record<"willExceed" | "exceeded" | "watch" | "token", string>;
+    ntfy: { url: string; hint: string; token: string };
+    webhook: { url: string; hint: string; secret: string };
+    /** Marks a field that may be left empty. */
+    optional: string;
+    /** Shown in place of a credential that is already saved. */
+    kept: string;
+    save: string;
+    saved: string;
+    notSaved: string;
+    /** `channel` is "ntfy" or "Webhook". */
+    invalidAddress: (p: { channel: string }) => string;
+    test: string;
+    noChannel: string;
+    delivered: (p: { channel: string }) => string;
+    /** `status` is an HTTP status, or null when the address could not be reached. */
+    failed: (p: { channel: string; status: number | null }) => string;
+    close: string;
+    /** The test message itself. */
+    testTitle: string;
+    testBody: string;
+  };
+
   /** An API token that did not work, by its position in ANALYTICS_TOKEN. */
   tokenProblem: (p: TokenProblem) => string;
 

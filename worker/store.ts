@@ -1,6 +1,6 @@
 import type { MetricId } from "../shared/catalog";
 import type { IsoDate } from "../shared/dates";
-import type { AccountSettings, ResourceNames, Settings, Snapshot, TokenProblem } from "../shared/types";
+import type { AccountSettings, ResourceNames, Settings, Snapshot, StoredAlerts, TokenProblem } from "../shared/types";
 
 /**
  * Everything this Worker keeps, in the one KV namespace it shares with the
@@ -10,7 +10,9 @@ import type { AccountSettings, ResourceNames, Settings, Snapshot, TokenProblem }
  *   usage:snapshot:<account>  the last read of the analytics API (about 90 days)
  *   usage:history:<account>   daily totals for days that have aged out of the snapshot
  *   usage:names:<account>     resource id to name, where the token may list them
- *   usage:settings            what was set on the page (billing day per account)
+ *   usage:settings            what was set on the page (billing day per account, alerts)
+ *   usage:alerted:<account>   what the owner has already been told this billing period
+ *   usage:alerted:tokens      which token problems have been reported
  */
 
 const PREFIX = "usage:";
@@ -82,6 +84,20 @@ export class Store {
     const next: Settings = { ...current, accounts: { ...current.accounts, [accountId]: merged } };
     await this.kv.put(`${PREFIX}settings`, JSON.stringify(next));
     return merged;
+  }
+
+  async saveAlerts(alerts: StoredAlerts): Promise<void> {
+    const current = await this.settings();
+    await this.kv.put(`${PREFIX}settings`, JSON.stringify({ ...current, alerts } satisfies Settings));
+  }
+
+  /** What has already been reported, by account id or the word `tokens`. */
+  async alerted<T>(key: string): Promise<T | null> {
+    return this.kv.get<T>(`${PREFIX}alerted:${key}`, "json");
+  }
+
+  async saveAlerted(key: string, ledger: unknown): Promise<void> {
+    await this.kv.put(`${PREFIX}alerted:${key}`, JSON.stringify(ledger));
   }
 
   /**

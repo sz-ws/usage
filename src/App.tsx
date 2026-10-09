@@ -5,7 +5,7 @@ import { isRenewalDay } from "../shared/cycle";
 import { byUrgency, evaluateSnapshot, isMinor } from "../shared/forecast";
 import { errorText, isErrorCode, type Messages } from "../shared/i18n";
 import { findings, headline, overallTone, type Tone } from "../shared/insights";
-import type { AccountState, AppState, Snapshot } from "../shared/types";
+import type { AccountState, AlertsView, AppState, Snapshot } from "../shared/types";
 import { ApiError, loadState, refreshAccount, saveRenewalDay } from "./api";
 import { Findings } from "./components/Findings";
 import { MetricDetail } from "./components/MetricDetail";
@@ -144,6 +144,10 @@ export function App() {
 
   const select = useCallback((id: MetricId | null) => setOpen(id), [setOpen]);
 
+  const setAlerts = useCallback((alerts: AlertsView) => {
+    setLoad((current) => (current.phase === "ready" ? { phase: "ready", state: { ...current.state, alerts } } : current));
+  }, []);
+
   if (load.phase === "loading") return <p className="status">{m.app.loading}</p>;
   if (load.phase === "failed") {
     return (
@@ -182,6 +186,8 @@ export function App() {
           nowMs={now}
           refreshing={refreshing === account.id}
           onRefresh={() => void refresh(account.id)}
+          alerts={load.state.alerts}
+          onAlerts={setAlerts}
         />
         {problems}
         {notice && (

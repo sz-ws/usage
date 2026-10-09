@@ -16,6 +16,7 @@ Um Worker na sua própria conta da Cloudflare. Ele lê o uso da conta no Cloudfl
 - **Quanto vai custar.** O excedente em dólares, pelos preços de lista da Cloudflare.
 - **Quem está usando.** Cada número por Worker, banco de dados, namespace, bucket, fila ou modelo.
 - **O que mudou.** Um Worker cujas solicitações triplicaram esta semana. Um armazenamento que vai ultrapassar a franquia incluída em 40 dias.
+- **Quando conferir.** Uma notificação por ntfy ou webhook quando um produto estiver no caminho de ultrapassar a franquia incluída.
 - **Várias contas**, uma aba para cada uma.
 - **Nove idiomas.**
 
@@ -55,6 +56,7 @@ Os documentos a seguir estão em inglês.
 
 - [Deploy e configuração](../deploy.md)
 - [Agentes, MCP e API JSON](../agents.md)
+- [Alertas por ntfy ou webhook](../alerts.md)
 - [Como funciona, e de onde vêm os números](../how-it-works.md)
 - [Desenvolvimento, e como adicionar um idioma](../development.md)
 

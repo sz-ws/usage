@@ -25,6 +25,8 @@ no telemetry and no third-party service.
   or model.
 - **What changed.** A Worker whose requests tripled this week. Storage that
   will pass its allowance in 40 days.
+- **When to look.** A push through ntfy or a webhook when a product is on
+  course to go over.
 - **Several accounts**, one tab each.
 - **Nine languages.**
 
@@ -75,6 +77,7 @@ token of its own. Other clients, the tools and the JSON API:
 
 - [Deploying and configuring](docs/deploy.md)
 - [Agents, MCP and the JSON API](docs/agents.md)
+- [Alerts through ntfy or a webhook](docs/alerts.md)
 - [How it works, and where the numbers come from](docs/how-it-works.md)
 - [Development, and adding a language](docs/development.md)
 

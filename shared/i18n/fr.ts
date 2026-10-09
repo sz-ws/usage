@@ -499,6 +499,43 @@ export const fr: Messages = {
     save: "Enregistrer",
   },
 
+  alerts: {
+    title: "Alertes",
+    lead: "Vérification quatre fois par jour. Vous êtes prévenu une fois chaque fois qu'un produit s'aggrave, pas à chaque vérification.",
+    when: "M'avertir quand",
+    events: {
+      willExceed: "un produit est en voie de dépasser son quota sur cette période",
+      exceeded: "un produit a dépassé son quota",
+      watch: "un produit est en voie de dépasser 80 % de son quota",
+      token: "un jeton API cesse de fonctionner",
+    },
+    ntfy: {
+      url: "Adresse du topic ntfy",
+      hint: "Par exemple https://ntfy.sh/un-nom-que-vous-seul-connaissez. Quiconque connaît le topic peut le lire.",
+      token: "Jeton d'accès",
+    },
+    webhook: {
+      url: "Adresse du Webhook",
+      hint: "Reçoit un JSON POST quand il y a quelque chose à vous signaler.",
+      secret: "Secret de signature",
+    },
+    optional: "facultatif",
+    kept: "Enregistré. Saisissez une valeur pour la remplacer.",
+    save: "Enregistrer",
+    saved: "Enregistré.",
+    notSaved: "Les alertes n'ont pas été enregistrées. Réessayez.",
+    invalidAddress: ({ channel }) =>
+      `L'adresse ${channel} doit commencer par https:// et, pour ntfy, se terminer par un topic.`,
+    test: "Envoyer un test",
+    noChannel: "Ajoutez un topic ntfy ou un webhook, puis enregistrez.",
+    delivered: ({ channel }) => `${channel} : reçu.`,
+    failed: ({ channel, status }) =>
+      status === null ? `${channel} : injoignable.` : `${channel} : refusé (${status}).`,
+    close: "Fermer",
+    testTitle: "Test depuis votre page de consommation",
+    testBody: "Les alertes arriveront ici.",
+  },
+
   tokenProblem: ({ token, status }) => {
     if (status === null) return `Impossible de joindre Cloudflare avec le jeton API n° ${token}.`;
     if (status === 200) return `Le jeton API n° ${token} fonctionne, mais il ne voit aucun compte.`;

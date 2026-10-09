@@ -75,6 +75,39 @@ export interface AppState {
   accounts: AccountState[];
   /** API tokens that did not work. Empty when all of them did. */
   problems: TokenProblem[];
+  alerts: AlertsView;
+}
+
+/** What the owner wants to hear about. */
+export interface AlertEvents {
+  /** A product is on course to go over its allowance this period. */
+  willExceed: boolean;
+  /** A product has gone over. */
+  exceeded: boolean;
+  /** A product is on course to pass 80% of its allowance. */
+  watch: boolean;
+  /** An API token stopped working. */
+  token: boolean;
+}
+
+/** Where alerts go, as the page may see it: the addresses, and whether a credential is set, never the credential. */
+export interface AlertsView {
+  events: AlertEvents;
+  ntfy: { url: string | null; hasToken: boolean };
+  webhook: { url: string | null; hasSecret: boolean };
+}
+
+/** The same settings as they are kept, credentials included. Stays in the Worker. */
+export interface StoredAlerts {
+  events: AlertEvents;
+  ntfyUrl: string | null;
+  ntfyToken: string | null;
+  webhookUrl: string | null;
+  webhookSecret: string | null;
+  /** The language alerts are written in: the one the page was in when they were saved. */
+  locale: string;
+  /** The page's own address, for the link in an alert. A scheduled run has no request to read it from. */
+  origin: string;
 }
 
 /** What the owner has told the page about an account. Cloudflare's API does not say it to a token this narrow. */
@@ -85,6 +118,7 @@ export interface AccountSettings {
 
 export interface Settings {
   accounts: Record<string, AccountSettings>;
+  alerts?: StoredAlerts;
 }
 
 /** An API token that did not work: its position in ANALYTICS_TOKEN counted from 1, and what Cloudflare answered. */

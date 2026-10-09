@@ -129,6 +129,11 @@ const renewalDay = new Date(now - 19 * DAY_MS).getUTCDate();
 let state = {
   accounts: [{ id: snapshot.accountId, name: "Acme", renewalDay: Math.min(renewalDay, 28), snapshot, names }],
   problems: [],
+  alerts: {
+    events: { willExceed: true, exceeded: true, watch: false, token: true },
+    ntfy: { url: null, hasToken: false },
+    webhook: { url: null, hasSecret: false },
+  },
 };
 
 const TYPES = {
@@ -170,6 +175,20 @@ createServer(async (request, response) => {
     state = { ...state, accounts: state.accounts.map((account) => ({ ...account, renewalDay: day })) };
     return json(response, { accountId: snapshot.accountId, renewalDay: day });
   }
+  if (url.pathname === "/api/alerts") {
+    const form = await bodyOf(request);
+    state = {
+      ...state,
+      alerts: {
+        events: form.events ?? state.alerts.events,
+        ntfy: { url: form.ntfyUrl ?? null, hasToken: Boolean(form.ntfyToken) },
+        webhook: { url: form.webhookUrl ?? null, hasSecret: Boolean(form.webhookSecret) },
+      },
+    };
+    return json(response, { alerts: state.alerts });
+  }
+  // Nothing is sent anywhere from the demo.
+  if (url.pathname === "/api/alerts/test") return json(response, { error: "no-channel" }, 400);
   if (url.pathname.startsWith("/api/")) return json(response, { error: "not-found" }, 404);
   if (url.pathname === "/signout") {
     response.writeHead(303, { location: "/" });

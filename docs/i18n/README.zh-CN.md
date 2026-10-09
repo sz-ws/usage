@@ -16,6 +16,7 @@
 - **会花多少钱。** 按 Cloudflare 标价算出的超额费用，以美元计。
 - **是谁在用。** 每个数字都能拆到 Worker、数据库、命名空间、存储桶、队列或模型。
 - **哪里变了。** 这周请求量增至三倍的 Worker。40 天后会超过套餐内额度的存储。
+- **什么时候该看。** 有产品照目前速度会超额时，通过 ntfy 或 webhook 推送给你。
 - **多个账户**，每个账户一个标签页。
 - **九种语言。**
 
@@ -55,6 +56,7 @@ claude mcp add --transport http usage https://<你的 Worker>/mcp
 
 - [部署与配置](../deploy.md)
 - [智能体、MCP 与 JSON API](../agents.md)
+- [通过 ntfy 或 webhook 发送的提醒](../alerts.md)
 - [工作原理，以及数字从哪里来](../how-it-works.md)
 - [开发，以及添加语言](../development.md)
 

@@ -16,6 +16,7 @@ Ein Worker in deinem eigenen Cloudflare-Konto. Er liest die Nutzung des Kontos a
 - **Was es kosten wird.** Die Überschreitung in Dollar, zu Cloudflares Listenpreisen.
 - **Wer es nutzt.** Jede Zahl nach Worker, Datenbank, Namespace, Bucket, Queue oder Modell.
 - **Was sich geändert hat.** Ein Worker, dessen Anfragen sich diese Woche verdreifacht haben. Speicher, der in 40 Tagen das enthaltene Kontingent überschreiten wird.
+- **Wann du hinschauen solltest.** Eine Push-Benachrichtigung über ntfy oder einen webhook, wenn ein Produkt auf eine Überschreitung zusteuert.
 - **Mehrere Konten**, pro Konto ein Tab.
 - **Neun Sprachen.**
 
@@ -55,6 +56,7 @@ Die folgenden Dokumente sind auf Englisch.
 
 - [Deployment und Konfiguration](../deploy.md)
 - [Agenten, MCP und die JSON-API](../agents.md)
+- [Benachrichtigungen über ntfy oder einen webhook](../alerts.md)
 - [Funktionsweise und Herkunft der Zahlen](../how-it-works.md)
 - [Entwicklung und das Hinzufügen einer Sprache](../development.md)
 

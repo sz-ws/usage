@@ -20,7 +20,7 @@ the session cookie is for `localhost`, whatever the port.
 | Path | What |
 | --- | --- |
 | `shared/` | Metrics and prices (`catalog.ts`), billing periods (`cycle.ts`), projections (`forecast.ts`), the sentences (`insights.ts`, `i18n/`). Pure and tested; runs in the browser and in the Worker. |
-| `worker/` | Sign-in (`access.ts`), the page that lets an agent connect (`authorize.ts`), the MCP server (`mcp.ts`), the JSON report (`report.ts`), analytics queries (`cloudflare.ts`, `shape.ts`), KV (`store.ts`). |
+| `worker/` | Sign-in (`access.ts`), the page that lets an agent connect (`authorize.ts`), the MCP server (`mcp.ts`), the JSON report (`report.ts`), alerts (`alerts.ts`), analytics queries (`cloudflare.ts`, `shape.ts`), KV (`store.ts`). |
 | `src/` | The page: React and plain CSS. |
 | `test/` | vitest. |
 | `scripts/demo.mjs` | The made-up data behind `pnpm demo`. |

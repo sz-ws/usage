@@ -1,4 +1,5 @@
-import type { AppState, ResourceNames, Snapshot } from "../shared/types";
+import type { Locale } from "../shared/i18n";
+import type { AlertEvents, AlertsView, AppState, ResourceNames, Snapshot } from "../shared/types";
 
 /**
  * A call the server refused. `code` is what the page explains to the reader
@@ -71,4 +72,30 @@ export function refreshAccount(accountId: string): Promise<{ snapshot: Snapshot;
 
 export function saveRenewalDay(accountId: string, renewalDay: number): Promise<{ renewalDay: number }> {
   return call("/api/settings", { method: "PUT", body: JSON.stringify({ accountId, renewalDay }) });
+}
+
+export interface AlertsForm {
+  events: AlertEvents;
+  ntfyUrl: string | null;
+  /** Left out to keep the stored one. */
+  ntfyToken?: string;
+  webhookUrl: string | null;
+  /** Left out to keep the stored one. */
+  webhookSecret?: string;
+  locale: Locale;
+}
+
+export function saveAlerts(form: AlertsForm): Promise<{ alerts: AlertsView }> {
+  return call("/api/alerts", { method: "PUT", body: JSON.stringify(form) });
+}
+
+export interface Delivery {
+  ok: boolean;
+  /** The HTTP status, or null when the address could not be reached. */
+  status: number | null;
+}
+
+/** Sends a test to each channel that is set up. Null for a channel that is not. */
+export function testAlerts(): Promise<{ ntfy: Delivery | null; webhook: Delivery | null }> {
+  return call("/api/alerts/test", { method: "POST", body: "{}" });
 }

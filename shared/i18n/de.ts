@@ -386,6 +386,43 @@ export const de: Messages = {
     save: "Speichern",
   },
 
+  alerts: {
+    title: "Benachrichtigungen",
+    lead: "Geprüft wird viermal am Tag. Du hörst von einem Produkt jedes Mal, wenn sich die Lage verschlechtert, nicht bei jeder Prüfung.",
+    when: "Benachrichtige mich, wenn",
+    events: {
+      willExceed: "ein Produkt in diesem Zeitraum voraussichtlich das Kontingent überschreitet",
+      exceeded: "ein Produkt das Kontingent überschritten hat",
+      watch: "ein Produkt voraussichtlich über 80% seines Kontingents kommen wird",
+      token: "ein API-Token nicht mehr funktioniert",
+    },
+    ntfy: {
+      url: "ntfy-Themenadresse",
+      hint: "Zum Beispiel https://ntfy.sh/ein-name-nur-du-kennst. Wer das Thema kennt, kann die Nachrichten mitlesen.",
+      token: "Zugriffstoken",
+    },
+    webhook: {
+      url: "Webhook-Adresse",
+      hint: "Empfängt einen JSON POST, wenn es etwas zu melden gibt.",
+      secret: "Signaturschlüssel",
+    },
+    optional: "optional",
+    kept: "Gespeichert. Zum Ersetzen einfach neu eingeben.",
+    save: "Speichern",
+    saved: "Gespeichert.",
+    notSaved: "Die Benachrichtigungen wurden nicht gespeichert. Versuch es erneut.",
+    invalidAddress: ({ channel }) =>
+      `Die Adresse für ${channel} muss mit https:// beginnen und bei ntfy mit einem Thema enden.`,
+    test: "Testnachricht senden",
+    noChannel: "Trag zuerst ein ntfy-Thema oder einen Webhook ein und speichere.",
+    delivered: ({ channel }) => `${channel}: zugestellt.`,
+    failed: ({ channel, status }) =>
+      status === null ? `${channel}: nicht erreichbar.` : `${channel}: abgelehnt (${status}).`,
+    close: "Schließen",
+    testTitle: "Test aus deiner Nutzungsseite",
+    testBody: "Benachrichtigungen kommen hier an.",
+  },
+
   tokenProblem: ({ token, status }) => {
     if (status === null) return `Mit API-Token ${token} war Cloudflare nicht erreichbar.`;
     if (status === 200) return `API-Token ${token} funktioniert, sieht aber kein Konto.`;

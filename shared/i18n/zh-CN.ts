@@ -322,6 +322,42 @@ export const zhCN: Messages = {
     save: "保存",
   },
 
+  alerts: {
+    title: "提醒",
+    lead: "每天检查四次。同一个产品每变严重一级只通知一次，不会每次检查都通知。",
+    when: "出现以下情况时通知我",
+    events: {
+      willExceed: "某个产品按目前速度本账期会超额",
+      exceeded: "某个产品已经超额",
+      watch: "某个产品按目前速度会超过额度的 80%",
+      token: "某个 API token 失效",
+    },
+    ntfy: {
+      url: "ntfy 主题地址",
+      hint: "例如 https://ntfy.sh/只有你知道的名字。知道主题的人都能读到。",
+      token: "访问令牌",
+    },
+    webhook: {
+      url: "Webhook 地址",
+      hint: "有事要通知你时，会收到一个 JSON POST 请求。",
+      secret: "签名密钥",
+    },
+    optional: "选填",
+    kept: "已保存。输入新的即可替换。",
+    save: "保存",
+    saved: "已保存。",
+    notSaved: "提醒设置没有保存成功，请再试一次。",
+    invalidAddress: ({ channel }) => `${channel} 的地址必须以 https:// 开头；ntfy 的地址要以主题名结尾。`,
+    test: "发送测试",
+    noChannel: "先填写 ntfy 主题或 Webhook 地址，然后保存。",
+    delivered: ({ channel }) => `${channel}：已送达。`,
+    failed: ({ channel, status }) =>
+      status === null ? `${channel}：无法连接。` : `${channel}：被拒绝（${status}）。`,
+    close: "关闭",
+    testTitle: "来自用量页面的测试",
+    testBody: "提醒会发送到这里。",
+  },
+
   tokenProblem: ({ token, status }) => {
     if (status === null) return `无法用第 ${token} 个 API token 连接 Cloudflare。`;
     if (status === 200) return `第 ${token} 个 API token 可以用，但看不到任何账户。`;

@@ -365,6 +365,42 @@ export const en: Messages = {
     save: "Save",
   },
 
+  alerts: {
+    title: "Alerts",
+    lead: "Checked four times a day. You hear about a product once each time it gets worse, not on every check.",
+    when: "Tell me when",
+    events: {
+      willExceed: "a product is on course to go over this period",
+      exceeded: "a product has gone over",
+      watch: "a product is on course to pass 80% of its allowance",
+      token: "an API token stops working",
+    },
+    ntfy: {
+      url: "ntfy topic address",
+      hint: "For example https://ntfy.sh/a-name-only-you-know. Anyone who knows the topic can read it.",
+      token: "Access token",
+    },
+    webhook: {
+      url: "Webhook address",
+      hint: "Receives a JSON POST when there is something to tell you.",
+      secret: "Signing secret",
+    },
+    optional: "optional",
+    kept: "Saved. Type to replace it.",
+    save: "Save",
+    saved: "Saved.",
+    notSaved: "The alerts were not saved. Try again.",
+    invalidAddress: ({ channel }) => `The ${channel} address has to start with https:// and, for ntfy, end with a topic.`,
+    test: "Send a test",
+    noChannel: "Add an ntfy topic or a webhook and save first.",
+    delivered: ({ channel }) => `${channel}: delivered.`,
+    failed: ({ channel, status }) =>
+      status === null ? `${channel}: could not be reached.` : `${channel}: refused (${status}).`,
+    close: "Close",
+    testTitle: "Test from your usage page",
+    testBody: "Alerts will arrive here.",
+  },
+
   tokenProblem: ({ token, status }) => {
     if (status === null) return `Cloudflare could not be reached with API token ${token}.`;
     if (status === 200) return `API token ${token} works but cannot see any account.`;

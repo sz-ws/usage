@@ -326,6 +326,43 @@ export const ja: Messages = {
     save: "保存",
   },
 
+  alerts: {
+    title: "通知設定",
+    lead: "1日4回確認します。状態が悪くなったときに1回だけ通知し、確認のたびに届くことはありません。",
+    when: "通知するタイミング",
+    events: {
+      willExceed: "今期中に、いずれかのサービスが枠を超える見込みになったとき",
+      exceeded: "いずれかのサービスが枠を超えたとき",
+      watch: "いずれかのサービスがプランの枠の80%を超える見込みになったとき",
+      token: "API トークンが使えなくなったとき",
+    },
+    ntfy: {
+      url: "ntfy トピックアドレス",
+      hint: "例：https://ntfy.sh/a-name-only-you-know。トピックを知っている人なら誰でも読めます。",
+      token: "アクセストークン",
+    },
+    webhook: {
+      url: "Webhook アドレス",
+      hint: "お知らせがあるときにJSON POSTを受け取ります。",
+      secret: "署名用シークレット",
+    },
+    optional: "任意",
+    kept: "保存済みです。入力すると置き換えます。",
+    save: "保存",
+    saved: "保存しました。",
+    notSaved: "通知設定を保存できませんでした。もう一度試してください。",
+    invalidAddress: ({ channel }) =>
+      `${channel}のアドレスはhttps://で始まる必要があります。ntfyの場合は、末尾にトピック名が必要です。`,
+    test: "テストを送る",
+    noChannel: "先にntfyのトピックかWebhookを追加して、保存してください。",
+    delivered: ({ channel }) => `${channel}：届きました。`,
+    failed: ({ channel, status }) =>
+      status === null ? `${channel}：接続できませんでした。` : `${channel}：拒否されました（${status}）。`,
+    close: "閉じる",
+    testTitle: "使用量ページからのテスト",
+    testBody: "通知はここに届きます。",
+  },
+
   tokenProblem: ({ token, status }) => {
     if (status === null) return `API トークン（${token}番目）でCloudflareに接続できませんでした。`;
     if (status === 200) return `API トークン（${token}番目）は使えますが、アカウントが1つも見えません。`;

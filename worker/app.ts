@@ -1,9 +1,11 @@
 import { z } from "zod";
 
 import { MAX_RENEWAL_DAY, MIN_RENEWAL_DAY } from "../shared/cycle";
-import { messages, pickLocale, type Locale } from "../shared/i18n";
+import { LOCALES, messages, pickLocale, type Locale } from "../shared/i18n";
+import type { StoredAlerts } from "../shared/types";
 import { bearerOf, clearedCookie, isSignedIn, issueSession, sameSecret, sessionCookie } from "./access";
 import { directoryOf } from "./accounts";
+import { alertsView, destination, ntfyTarget, send, testNotice } from "./alerts";
 import { authorize } from "./authorize";
 import { AnalyticsError } from "./cloudflare";
 import { setupOf, type Env, type Setup } from "./env";
@@ -38,6 +40,18 @@ const refreshBody = z.object({ accountId: z.string() });
 const settingsBody = z.object({
   accountId: z.string(),
   renewalDay: z.number().int().min(MIN_RENEWAL_DAY).max(MAX_RENEWAL_DAY),
+});
+
+/** A credential field: left out to keep what is stored, null or empty to clear it, text to replace it. */
+const credential = z.string().max(500).nullable().optional();
+
+const alertsBody = z.object({
+  events: z.object({ willExceed: z.boolean(), exceeded: z.boolean(), watch: z.boolean(), token: z.boolean() }),
+  ntfyUrl: z.string().max(500).nullable(),
+  ntfyToken: credential,
+  webhookUrl: z.string().max(500).nullable(),
+  webhookSecret: credential,
+  locale: z.enum(LOCALES),
 });
 
 function localeOf(request: Request, url: URL): Locale {
@@ -134,6 +148,45 @@ async function saveSettings(request: Request, reader: Reader): Promise<Response>
   return json({ accountId, renewalDay });
 }
 
+/** What to keep of a credential: the stored one when the field was left out, nothing when it was emptied. */
+function kept(sent: string | null | undefined, stored: string | null | undefined): string | null {
+  if (sent === undefined) return stored ?? null;
+  return sent === null || sent.trim() === "" ? null : sent.trim();
+}
+
+async function saveAlerts(request: Request, url: URL, reader: Reader): Promise<Response> {
+  const body = alertsBody.safeParse(await request.json().catch(() => null));
+  if (!body.success) return json({ error: "invalid-request" }, 400);
+
+  const ntfyUrl = body.data.ntfyUrl?.trim() || null;
+  const webhookUrl = body.data.webhookUrl?.trim() || null;
+  // Refused here rather than quietly never sent to.
+  if (ntfyUrl !== null && ntfyTarget(ntfyUrl) === null) return json({ error: "invalid-ntfy-address" }, 400);
+  if (webhookUrl !== null && destination(webhookUrl) === null) return json({ error: "invalid-webhook-address" }, 400);
+
+  const before = (await reader.store.settings()).alerts;
+  const alerts: StoredAlerts = {
+    events: body.data.events,
+    ntfyUrl,
+    // A credential belongs to its address: with the address gone, so is it.
+    ntfyToken: ntfyUrl === null ? null : kept(body.data.ntfyToken, before?.ntfyToken),
+    webhookUrl,
+    webhookSecret: webhookUrl === null ? null : kept(body.data.webhookSecret, before?.webhookSecret),
+    locale: body.data.locale,
+    origin: url.origin,
+  };
+  await reader.store.saveAlerts(alerts);
+  return json({ alerts: alertsView(alerts) });
+}
+
+async function testAlerts(reader: Reader): Promise<Response> {
+  const alerts = (await reader.store.settings()).alerts;
+  if (!alerts || (alerts.ntfyUrl === null && alerts.webhookUrl === null)) {
+    return json({ error: "no-channel" }, 400);
+  }
+  return json(await send(alerts, testNotice(alerts), Date.now()));
+}
+
 async function api(request: Request, url: URL, reader: Reader): Promise<Response> {
   if (isForeignCall(request, url)) return json({ error: "origin-not-allowed" }, 403);
   // A second check behind the origin one: a body whose type is JSON cannot be
@@ -150,6 +203,10 @@ async function api(request: Request, url: URL, reader: Reader): Promise<Response
       return refresh(request, reader);
     case "PUT /api/settings":
       return saveSettings(request, reader);
+    case "PUT /api/alerts":
+      return saveAlerts(request, url, reader);
+    case "POST /api/alerts/test":
+      return testAlerts(reader);
     default:
       return json({ error: "not-found" }, 404);
   }

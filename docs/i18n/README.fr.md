@@ -16,6 +16,7 @@ Un Worker dans votre propre compte Cloudflare. Il lit la consommation du compte 
 - **Ce que cela coûtera.** Le dépassement en dollars, aux tarifs publics de Cloudflare.
 - **Qui l'utilise.** Chaque chiffre par Worker, base de données, espace de noms, compartiment, file d'attente ou modèle.
 - **Ce qui a changé.** Un Worker dont les requêtes ont triplé cette semaine. Un stockage qui dépassera son quota inclus dans 40 jours.
+- **Quand regarder.** Une notification par ntfy ou webhook lorsqu'un produit est en passe de dépasser son quota inclus.
 - **Plusieurs comptes**, un onglet pour chacun.
 - **Neuf langues.**
 
@@ -55,6 +56,7 @@ Les documents suivants sont en anglais.
 
 - [Déploiement et configuration](../deploy.md)
 - [Agents, MCP et API JSON](../agents.md)
+- [Alertes par ntfy ou webhook](../alerts.md)
 - [Fonctionnement, et d'où viennent les chiffres](../how-it-works.md)
 - [Développement, et ajout d'une langue](../development.md)
 

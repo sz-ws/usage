@@ -411,6 +411,43 @@ export const ptBR: Messages = {
     save: "Salvar",
   },
 
+  alerts: {
+    title: "Alertas",
+    lead: "Verificação feita quatro vezes por dia. Você recebe um aviso sobre um produto uma vez cada vez que a situação dele piora, e não a cada verificação.",
+    when: "Avise-me quando",
+    events: {
+      willExceed: "um produto estiver a caminho de ultrapassar a franquia neste período",
+      exceeded: "um produto ultrapassar a franquia",
+      watch: "um produto estiver a caminho de passar de 80% da franquia",
+      token: "um token de API parar de funcionar",
+    },
+    ntfy: {
+      url: "Endereço do tópico no ntfy",
+      hint: "Por exemplo, https://ntfy.sh/so-voce-conhece. Quem souber o tópico consegue ler as mensagens.",
+      token: "Token de acesso",
+    },
+    webhook: {
+      url: "Endereço do Webhook",
+      hint: "Recebe um JSON POST quando há algo para avisar você.",
+      secret: "Segredo de assinatura",
+    },
+    optional: "opcional",
+    kept: "Salvo. Digite para substituir.",
+    save: "Salvar",
+    saved: "Salvo.",
+    notSaved: "Os alertas não foram salvos. Tente novamente.",
+    invalidAddress: ({ channel }) =>
+      `O endereço do ${channel} precisa começar com https:// e, no caso do ntfy, terminar com um tópico.`,
+    test: "Enviar teste",
+    noChannel: "Adicione um tópico do ntfy ou um webhook e salve antes.",
+    delivered: ({ channel }) => `${channel}: entregue.`,
+    failed: ({ channel, status }) =>
+      status === null ? `${channel}: não foi possível acessar.` : `${channel}: recusado (${status}).`,
+    close: "Fechar",
+    testTitle: "Teste da sua página de uso",
+    testBody: "Os alertas vão chegar aqui.",
+  },
+
   tokenProblem: ({ token, status }) => {
     if (status === null) return `Não foi possível acessar a Cloudflare com o token de API ${token}.`;
     if (status === 200) return `O token de API ${token} funciona, mas não vê nenhuma conta.`;
