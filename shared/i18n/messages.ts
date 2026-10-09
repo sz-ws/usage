@@ -30,6 +30,7 @@ export type ErrorCode =
   | "invalid-request"
   | "rate-limited"
   | "unauthenticated"
+  | "reconnect"
   | "unavailable"
   | "unknown";
 
@@ -288,6 +289,8 @@ export interface Messages {
 
   /** An API token that did not work, by its position in ANALYTICS_TOKEN. */
   tokenProblem: (p: TokenProblem) => string;
+  /** The link beside `errors.reconnect`, which leads to connecting Cloudflare again. */
+  reconnect: string;
 
   warning: (w: Warning) => string;
 

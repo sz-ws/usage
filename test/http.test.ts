@@ -234,7 +234,7 @@ describe("the pages the Worker draws", () => {
     ];
     for (const page of pages) {
       expect(page).not.toMatch(/<script|\sstyle=|\son[a-z]+=|javascript:/i);
-      expect(page).toContain('<link rel="stylesheet" href="/door.css">');
+      expect(page).toMatch(/<link rel="stylesheet" href="\/door\.css\?v=\d+">/);
     }
   });
 

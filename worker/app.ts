@@ -3,12 +3,14 @@ import { z } from "zod";
 import { MAX_RENEWAL_DAY, MIN_RENEWAL_DAY } from "../shared/cycle";
 import { LOCALES, messages, pickLocale, type Locale } from "../shared/i18n";
 import type { StoredAlerts } from "../shared/types";
-import { bearerOf, clearedCookie, isSignedIn, issueSession, sameSecret, sessionCookie } from "./access";
-import { directoryOf } from "./accounts";
+import { bearerOf, clearedCookie, isSignedIn, issueSession, renewedSession, sameSecret, sessionCookie } from "./access";
 import { alertsView, destination, ntfyTarget, send, testNotice } from "./alerts";
 import { authorize } from "./authorize";
 import { AnalyticsError } from "./cloudflare";
-import { setupOf, type Env, type Setup } from "./env";
+import { connect, isConnectPath } from "./connect";
+import { ReconnectNeeded } from "./connection";
+import { doorOf, type Door } from "./door";
+import { setupOf, type Env } from "./env";
 import {
   html,
   isCrossSiteSubrequest,
@@ -26,15 +28,14 @@ import {
 import { setupPage, signInPage, type KeyError } from "./pages";
 import { reportsFor } from "./report";
 import { pageText } from "./text";
-import { MIN_REFRESH_INTERVAL_MS, readState, readerFor, refreshAccount, type Reader } from "./usage";
+import { Store } from "./store";
+import { MIN_REFRESH_INTERVAL_MS, accountsOf, readState, refreshAccount, type Reader } from "./usage";
 
 /**
  * Everything but the MCP endpoint and the OAuth plumbing in front of it: the
  * page and its API, the JSON report, signing in and out, and the page that lets
  * an agent connect.
  */
-
-type Ready = Extract<Setup, { ready: true }>;
 
 const refreshBody = z.object({ accountId: z.string() });
 const settingsBody = z.object({
@@ -65,12 +66,12 @@ function isSecure(url: URL): boolean {
 /** A form this small has no business being larger. */
 const MAX_FORM_BYTES = 8_192;
 
-async function signIn(request: Request, url: URL, env: Env, setup: Ready): Promise<Response> {
+async function signIn(request: Request, url: URL, env: Env, accessKey: string): Promise<Response> {
   const text = pageText(localeOf(request, url));
 
   if (request.method === "GET") {
     const next = nextPath(url.searchParams.get("next"));
-    if (await isSignedIn(request, setup.accessKey, Date.now())) return redirect(next);
+    if (await isSignedIn(request, accessKey, Date.now())) return redirect(next);
     const flagged = url.searchParams.get("error");
     const error: KeyError | null = flagged === "wrong" || flagged === "too-many" ? flagged : null;
     return html(signInPage(text, next, error), error ? 401 : 200);
@@ -89,14 +90,14 @@ async function signIn(request: Request, url: URL, env: Env, setup: Ready): Promi
   const back = new URL(url);
   back.searchParams.set("next", next);
 
-  if (!(await sameSecret(String(form.get("key") ?? ""), setup.accessKey))) {
+  if (!(await sameSecret(String(form.get("key") ?? ""), accessKey))) {
     return redirect(signInAddress(back, "wrong"), 303);
   }
 
   const response = redirect(next, 303);
   response.headers.append(
     "set-cookie",
-    sessionCookie(await issueSession(setup.accessKey, Date.now()), isSecure(url)),
+    sessionCookie(await issueSession(accessKey, Date.now()), isSecure(url)),
   );
   return response;
 }
@@ -115,7 +116,7 @@ async function refresh(request: Request, reader: Reader): Promise<Response> {
   if (!body.success) return json({ error: "invalid-request" }, 400);
 
   // A press of the button is also when a new account or a renamed one should show up.
-  const directory = await directoryOf(reader.store, reader.tokens, Date.now(), { fresh: true });
+  const directory = await accountsOf(reader, Date.now(), { fresh: true });
   const account = directory.accounts.find((entry) => entry.id === body.data.accountId);
   if (!account) return json({ error: "unknown-account" }, 404);
 
@@ -128,6 +129,7 @@ async function refresh(request: Request, reader: Reader): Promise<Response> {
     const snapshot = await refreshAccount(reader, account, existing);
     return json({ snapshot, names: await reader.store.names(account.id) });
   } catch (error) {
+    if (error instanceof ReconnectNeeded) return json({ error: "reconnect" }, 409);
     console.error("refresh failed", account.id, error);
     // Cloudflare's own words say what it objected to; anything else stays in the log.
     return json({ error: "analytics", message: error instanceof AnalyticsError ? error.message : undefined }, 502);
@@ -138,7 +140,7 @@ async function saveSettings(request: Request, reader: Reader): Promise<Response>
   const body = settingsBody.safeParse(await request.json().catch(() => null));
   if (!body.success) return json({ error: "invalid-request" }, 400);
 
-  const directory = await directoryOf(reader.store, reader.tokens, Date.now());
+  const directory = await accountsOf(reader, Date.now());
   if (!directory.accounts.some((entry) => entry.id === body.data.accountId)) {
     return json({ error: "unknown-account" }, 404);
   }
@@ -187,7 +189,8 @@ async function testAlerts(reader: Reader): Promise<Response> {
   return json(await send(alerts, testNotice(alerts), Date.now()));
 }
 
-async function api(request: Request, url: URL, reader: Reader): Promise<Response> {
+async function api(request: Request, url: URL, door: Door): Promise<Response> {
+  const { reader } = door;
   if (isForeignCall(request, url)) return json({ error: "origin-not-allowed" }, 403);
   // A second check behind the origin one: a body whose type is JSON cannot be
   // sent from another origin without a preflight, and preflights are not answered.
@@ -198,7 +201,10 @@ async function api(request: Request, url: URL, reader: Reader): Promise<Response
 
   switch (`${request.method} ${url.pathname}`) {
     case "GET /api/state":
-      return json(await readState(reader, Date.now()));
+      return json({
+        ...(await readState(reader, Date.now())),
+        ...(door.connection ? { reconnect: door.connection.broken } : {}),
+      });
     case "POST /api/refresh":
       return refresh(request, reader);
     case "PUT /api/settings":
@@ -225,20 +231,20 @@ function refuse(error: string, status: number, headers?: Record<string, string>)
 }
 
 /**
- * Who may read /api/v1: a script with the key, or the owner's own browser,
+ * Who may read /api/v1: a script with the access key, or the owner's own browser,
  * whether the page asked or the owner opened the address directly. A wrong key
  * is never rescued by a cookie. Someone who opens the address signed out is
  * sent to sign in, the same as on the page.
  */
-async function readerOf(request: Request, url: URL, setup: Ready): Promise<"allowed" | "sign-in" | "refused"> {
+async function readerOf(request: Request, url: URL, door: Door): Promise<"allowed" | "sign-in" | "refused"> {
   if (request.headers.has("authorization")) {
     const key = bearerOf(request.headers.get("authorization"));
-    return key !== null && (await sameSecret(key, setup.accessKey)) ? "allowed" : "refused";
+    return key !== null && door.bearer !== null && (await sameSecret(key, door.bearer)) ? "allowed" : "refused";
   }
 
   const visiting = isTopLevelVisit(request);
   if (isForeignCall(request, url) && !visiting) return "refused";
-  if (await isSignedIn(request, setup.accessKey, Date.now())) return "allowed";
+  if (await isSignedIn(request, door.secret, Date.now())) return "allowed";
   return visiting ? "sign-in" : "refused";
 }
 
@@ -248,17 +254,17 @@ async function readerOf(request: Request, url: URL, setup: Ready): Promise<"allo
  *   ?fresh=1               read from Cloudflare first, unless that was done in the last minute
  *   ?lang=<locale>         the language of the sentences; otherwise Accept-Language, then English
  */
-async function report(request: Request, url: URL, env: Env, setup: Ready, reader: Reader): Promise<Response> {
+async function report(request: Request, url: URL, env: Env, door: Door): Promise<Response> {
   if (await overLimit(env.API_LIMIT, request)) return refuse("rate-limited", 429, { "retry-after": "60" });
 
-  const allowed = await readerOf(request, url, setup);
+  const allowed = await readerOf(request, url, door);
   if (allowed === "sign-in") return redirect(signInAddress(url));
   if (allowed === "refused") return refuse("unauthenticated", 401, { "www-authenticate": "Bearer" });
   if (url.pathname !== "/api/v1/usage") return refuse("not-found", 404);
   if (request.method !== "GET") return refuse("method-not-allowed", 405, { allow: "GET" });
 
   const nowMs = Date.now();
-  const reports = await reportsFor(reader, {
+  const reports = await reportsFor(door.reader, {
     account: url.searchParams.get("account"),
     fresh: url.searchParams.get("fresh") === "1",
     m: messages(localeOf(request, url)),
@@ -269,7 +275,7 @@ async function report(request: Request, url: URL, env: Env, setup: Ready, reader
   return answer({ generatedAt: new Date(nowMs).toISOString(), ...reports }, isTopLevelVisit(request));
 }
 
-async function route(request: Request, env: Env): Promise<Response> {
+async function route(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
   const isApi = url.pathname.startsWith("/api/");
 
@@ -290,28 +296,46 @@ async function route(request: Request, env: Env): Promise<Response> {
     );
   }
 
-  if (url.pathname === "/signin") return secured(await signIn(request, url, env, setup));
+  if (setup.mode === "signin") {
+    const visit = { request, url, env, ctx, client: setup.client, store: new Store(env.OAUTH_KV) };
+    if (isConnectPath(visit)) return connect({ ...visit, text: pageText(localeOf(request, url)) });
+  } else if (url.pathname === "/signin") {
+    return secured(await signIn(request, url, env, setup.accessKey));
+  }
   if (url.pathname === "/signout") return secured(signOut(request, url));
-  if (url.pathname === "/authorize") {
-    return authorize({ request, url, env, accessKey: setup.accessKey, text: pageText(localeOf(request, url)) });
+
+  const door = await doorOf(env, setup);
+  if (!door) {
+    // Nobody has connected Cloudflare yet, so there is nothing to show and no one to show it to.
+    return secured(
+      isApi ? json({ success: false, data: null, error: "not-connected" }, 503) : redirect(signInAddress(url)),
+    );
   }
 
-  const reader = readerFor(env.OAUTH_KV, setup.tokens);
-  if (url.pathname.startsWith("/api/v1/")) return secured(await report(request, url, env, setup, reader));
+  if (url.pathname === "/authorize") {
+    return authorize({ request, url, env, secret: door.secret, text: pageText(localeOf(request, url)) });
+  }
+  if (url.pathname.startsWith("/api/v1/")) return secured(await report(request, url, env, door));
 
-  if (!(await isSignedIn(request, setup.accessKey, Date.now()))) {
+  if (!(await isSignedIn(request, door.secret, Date.now()))) {
     return secured(isApi ? json({ error: "unauthenticated" }, 401) : redirect(signInAddress(url)));
   }
 
-  if (isApi) return secured(await api(request, url, reader));
+  if (isApi) {
+    const response = secured(await api(request, url, door));
+    // The page asks for its state each time it is opened, which makes this the visit that keeps a session alive.
+    const renewed = url.pathname === "/api/state" ? await renewedSession(request, door.secret, Date.now()) : null;
+    if (renewed) response.headers.append("set-cookie", renewed);
+    return response;
+  }
   const asset = await env.ASSETS.fetch(request);
   return secured(asset, keepFor(url.pathname, asset.status));
 }
 
 export const app = {
-  async fetch(request, env): Promise<Response> {
+  async fetch(request, env, ctx): Promise<Response> {
     try {
-      return await route(request, env);
+      return await route(request, env, ctx);
     } catch (error) {
       console.error("unhandled", error);
       return secured(json({ error: "internal" }, 500));

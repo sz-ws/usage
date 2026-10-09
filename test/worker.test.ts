@@ -8,7 +8,7 @@ import { NO_ALERTS } from "../worker/alerts";
 import { app } from "../worker/app";
 import type { Env } from "../worker/env";
 import type { AccountReport } from "../worker/report";
-import { fakeFetch, fakeKv } from "./helpers";
+import { fakeContext, fakeFetch, fakeKv } from "./helpers";
 
 const ACCOUNT = "4".repeat(32);
 const TOKEN = "cfat_never_shown_to_anyone";
@@ -32,7 +32,7 @@ function env(overrides: Partial<Env> = {}): Env {
 }
 
 function send(request: Request, bindings: Env = env()): Promise<Response> {
-  return app.fetch(request as Parameters<typeof app.fetch>[0], bindings);
+  return app.fetch(request as Parameters<typeof app.fetch>[0], bindings, fakeContext().ctx);
 }
 
 async function cookie(): Promise<string> {

@@ -17,6 +17,9 @@
   // Readings, settings and agent sign-ins. No id: `wrangler deploy` and the
   // Deploy to Cloudflare button both create the namespace on first deploy.
   "kv_namespaces": [{ "binding": "OAUTH_KV" }],
+  // Tells the Worker which version of itself is running. Signing in with
+  // Cloudflare uses it to recognise the account the Worker runs in.
+  "version_metadata": { "binding": "CF_VERSION_METADATA" },
   // Per caller IP (per /64 for IPv6). These count per Cloudflare location, so
   // they let more through than the number says: a ceiling on floods, not a meter.
   "ratelimits": [

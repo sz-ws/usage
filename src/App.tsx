@@ -162,6 +162,13 @@ export function App() {
       {m.tokenProblem(problem)}
     </p>
   ));
+  if (load.state.reconnect) {
+    problems.unshift(
+      <p key="reconnect" className="notice" role="alert">
+        {m.errors.reconnect} <a href="/signin?again=1">{m.reconnect}</a>
+      </p>,
+    );
+  }
 
   if (!account) {
     return (

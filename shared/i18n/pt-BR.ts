@@ -454,6 +454,8 @@ export const ptBR: Messages = {
     return `A Cloudflare recusou o token de API ${token} (${status}). Confira se ele tem a permissão Account Analytics: Read e se ainda não expirou.`;
   },
 
+  reconnect: "Reconectar",
+
   warning: (w) => {
     switch (w.kind) {
       case "recent-unavailable":
@@ -474,6 +476,7 @@ export const ptBR: Messages = {
     "invalid-request": "A solicitação não foi aceita. Recarregue a página e tente novamente.",
     "rate-limited": "Muitas solicitações. Espere um minuto e tente novamente.",
     unauthenticated: "Seu login expirou. Entre novamente.",
+    reconnect: "A Cloudflare não aceita mais o login desta página, então os números deixaram de ser atualizados.",
     unavailable: "O serviço está indisponível no momento. Tente novamente em instantes.",
     unknown: "Algo deu errado. Tente novamente.",
   },

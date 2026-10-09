@@ -5,9 +5,9 @@ import { CATALOG } from "../shared/catalog";
 import { LOCALES, messages, pickLocale } from "../shared/i18n";
 import { keyFingerprint } from "./access";
 import type { GrantProps } from "./authorize";
-import { setupOf, type Env } from "./env";
+import { openDoor } from "./door";
+import type { Env } from "./env";
 import { MAX_HISTORY_DAYS, historyFor, isMetricId, reportsFor } from "./report";
-import { readerFor } from "./usage";
 
 /**
  * The same figures as the page, for an agent: an MCP server at /mcp.
@@ -42,11 +42,8 @@ function asError(message: string) {
 function buildServer(env: Env): McpServer {
   const server = new McpServer({ name: "cloudflare-usage", version: "0.1.0" }, { instructions: INSTRUCTIONS });
 
-  const reader = () => {
-    const setup = setupOf(env);
-    return setup.ready ? readerFor(env.OAUTH_KV, setup.tokens) : null;
-  };
-  const NOT_SET_UP = "This deployment has no ANALYTICS_TOKEN yet, so there is no usage to report.";
+  const reader = async () => (await openDoor(env))?.reader ?? null;
+  const NOT_SET_UP = "This deployment is not connected to Cloudflare yet, so there is no usage to report.";
 
   server.registerTool(
     "usage_report",
@@ -67,7 +64,7 @@ function buildServer(env: Env): McpServer {
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     async ({ account, fresh, lang }) => {
-      const source = reader();
+      const source = await reader();
       if (!source) return asError(NOT_SET_UP);
 
       const nowMs = Date.now();
@@ -103,7 +100,7 @@ function buildServer(env: Env): McpServer {
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     async ({ account, metric, days, lang }) => {
-      const source = reader();
+      const source = await reader();
       if (!source) return asError(NOT_SET_UP);
       if (!isMetricId(metric)) {
         return asError(`"${metric}" is not a metric id. The ids are: ${CATALOG.map((def) => def.id).join(", ")}.`);
@@ -143,10 +140,10 @@ const grantProps = z.union([
  * owner to connect it again.
  */
 async function isCurrent(props: unknown, env: Env): Promise<boolean> {
-  const setup = setupOf(env);
+  const door = await openDoor(env);
   const grant = grantProps.safeParse(props);
-  if (!setup.ready || !grant.success) return false;
-  return grant.data.via === "key" || grant.data.key === (await keyFingerprint(setup.accessKey));
+  if (!door || !grant.success) return false;
+  return grant.data.via === "key" || grant.data.key === (await keyFingerprint(door.secret));
 }
 
 export const mcp = {

@@ -34,7 +34,8 @@ interface Visit {
   request: Request;
   url: URL;
   env: Env;
-  accessKey: string;
+  /** What sessions are signed with and grants are tied to: the access key, or the key a Cloudflare sign-in left. */
+  secret: string;
   text: PageText;
 }
 
@@ -74,7 +75,7 @@ async function decide(visit: Visit): Promise<Response> {
     userId: OWNER,
     metadata: {},
     scope: [SCOPE],
-    props: { via: "oauth", key: await keyFingerprint(visit.accessKey) } satisfies GrantProps,
+    props: { via: "oauth", key: await keyFingerprint(visit.secret) } satisfies GrantProps,
   });
 
   const response = redirect(redirectTo);
@@ -90,7 +91,7 @@ export async function authorize(visit: Visit): Promise<Response> {
 
   // Before anything else: an anonymous visitor must not be able to make this
   // Worker fetch a client's metadata or write a consent record.
-  if (!(await isSignedIn(request, visit.accessKey, Date.now()))) {
+  if (!(await isSignedIn(request, visit.secret, Date.now()))) {
     return secured(redirect(signInAddress(url), request.method === "POST" ? 303 : 302));
   }
 

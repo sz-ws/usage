@@ -429,6 +429,8 @@ export const de: Messages = {
     return `Cloudflare hat API-Token ${token} abgelehnt (${status}). Prüfe, ob er die Berechtigung Account Analytics: Read hat und nicht abgelaufen ist.`;
   },
 
+  reconnect: "Erneut verbinden",
+
   warning: (w) => {
     switch (w.kind) {
       case "recent-unavailable":
@@ -449,6 +451,7 @@ export const de: Messages = {
     "invalid-request": "Die Anfrage wurde nicht angenommen. Lade die Seite neu und versuch es erneut.",
     "rate-limited": "Zu viele Anfragen. Warte eine Minute und versuch es erneut.",
     unauthenticated: "Deine Anmeldung ist abgelaufen. Melde dich erneut an.",
+    reconnect: "Cloudflare akzeptiert die Anmeldung für diese Seite nicht mehr, deshalb werden die Nutzungswerte nicht mehr aktualisiert.",
     unavailable: "Der Dienst ist gerade nicht verfügbar. Versuch es gleich noch einmal.",
     unknown: "Etwas ist schiefgelaufen. Versuch es erneut.",
   },

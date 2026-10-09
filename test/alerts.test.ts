@@ -18,7 +18,7 @@ import {
 import { app } from "../worker/app";
 import type { Env } from "../worker/env";
 import { Store } from "../worker/store";
-import { fakeFetch, fakeKv } from "./helpers";
+import { fakeContext, fakeFetch, fakeKv } from "./helpers";
 
 const ACCOUNT = { id: "4".repeat(32), name: "Acme", renewalDay: 1 };
 const NOW = Date.parse("2026-10-09T12:00:00Z");
@@ -336,7 +336,7 @@ describe("setting alerts from the page", () => {
       },
     });
     const env = { ANALYTICS_TOKEN: "cfat_x", ACCESS_KEY: KEY, OAUTH_KV: kv } as unknown as Env;
-    return app.fetch(request as Parameters<typeof app.fetch>[0], env);
+    return app.fetch(request as Parameters<typeof app.fetch>[0], env, fakeContext().ctx);
   }
 
   it("keeps what was set, and answers with the view that has no credentials in it", async () => {

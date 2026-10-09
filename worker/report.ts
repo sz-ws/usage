@@ -7,8 +7,8 @@ import { byUrgency, evaluateSnapshot, totalOverageUsd, type Evaluation, type Sta
 import type { Messages } from "../shared/i18n";
 import { findings, headline, overallTone, resourceName, type Finding, type Tone } from "../shared/insights";
 import { OTHER_KEY, type ResourceNames, type Snapshot, type TokenProblem, type Warning } from "../shared/types";
-import { directoryOf, findAccount } from "./accounts";
-import { MIN_REFRESH_INTERVAL_MS, refreshAccount, renewalDayOf, type Reader } from "./usage";
+import { findAccount } from "./accounts";
+import { MIN_REFRESH_INTERVAL_MS, accountsOf, refreshAccount, renewalDayOf, type Reader } from "./usage";
 
 /**
  * The page's conclusions as data, for scripts and agents: the same evaluation
@@ -150,7 +150,7 @@ export interface Reports {
 export async function reportsFor(reader: Reader, options: ReportOptions): Promise<Reports | null> {
   const { m, nowMs } = options;
   const [directory, settings] = await Promise.all([
-    directoryOf(reader.store, reader.tokens, nowMs),
+    accountsOf(reader, nowMs),
     reader.store.settings(),
   ]);
 
@@ -207,7 +207,7 @@ export async function historyFor(
   reader: Reader,
   options: { account: string; metric: MetricId; days: number; m: Messages; nowMs: number },
 ): Promise<MetricHistory | "unknown-account" | "no-reading"> {
-  const directory = await directoryOf(reader.store, reader.tokens, options.nowMs);
+  const directory = await accountsOf(reader, options.nowMs);
   const account = findAccount(directory, options.account);
   if (!account) return "unknown-account";
 

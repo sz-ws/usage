@@ -50,6 +50,12 @@ async function accountsFor(token: string, position: number): Promise<Seen> {
   return { accounts, problem: accounts.length === 0 ? { token: position, status: 200 } : null };
 }
 
+/** The accounts `token` can list, or null when Cloudflare refused it or could not be reached. */
+export async function accountsSeenBy(token: string): Promise<{ id: string; name: string }[] | null> {
+  const seen = await accountsFor(token, 1);
+  return seen.problem && seen.problem.status !== 200 ? null : seen.accounts;
+}
+
 /** Changes when the tokens change, without being the tokens. */
 async function fingerprint(tokens: readonly string[]): Promise<string> {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(tokens.join("\n")));

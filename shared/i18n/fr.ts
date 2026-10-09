@@ -542,6 +542,8 @@ export const fr: Messages = {
     return `Cloudflare a refusé le jeton API n° ${token} (${status}). Vérifiez qu'il a la permission Account Analytics: Read et qu'il n'a pas expiré.`;
   },
 
+  reconnect: "Se reconnecter",
+
   warning: (w) => {
     switch (w.kind) {
       case "recent-unavailable":
@@ -562,6 +564,7 @@ export const fr: Messages = {
     "invalid-request": "La requête n'a pas été acceptée. Rechargez la page et réessayez.",
     "rate-limited": "Trop de requêtes. Attendez une minute, puis réessayez.",
     unauthenticated: "Votre connexion a expiré. Connectez-vous à nouveau.",
+    reconnect: "Cloudflare n'accepte plus la connexion de cette page, donc les chiffres ne sont plus mis à jour.",
     unavailable: "Le service est indisponible pour le moment. Réessayez dans un instant.",
     unknown: "Une erreur est survenue. Réessayez.",
   },
