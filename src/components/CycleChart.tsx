@@ -124,7 +124,7 @@ export function CycleChart({ data, unit, metric }: Props) {
                 y={HEIGHT - 6}
                 textAnchor={day === 0 ? "start" : day >= data.span ? "end" : "middle"}
               >
-                {formatShortDay(addDays(data.start, day))}
+                {formatShortDay(addDays(data.start, day), m)}
               </text>
             ))}
 

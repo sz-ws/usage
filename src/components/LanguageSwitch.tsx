@@ -1,30 +1,21 @@
-import { HTML_LANG, LOCALES, type Locale } from "../../shared/i18n";
+import { HTML_LANG, LOCALES, LOCALE_NAMES, type Locale } from "../../shared/i18n";
 import { useLocale, useMessages } from "../locale";
 
-/** Each language is offered under its own name, so a reader who landed in the wrong one can still find theirs. */
-const NAMES: Readonly<Record<Locale, { short: string; full: string }>> = {
-  en: { short: "EN", full: "English" },
-  "zh-TW": { short: "中文", full: "中文" },
-};
-
+/** A plain menu: with this many languages, a row of buttons would crowd the bar. */
 export function LanguageSwitch() {
   const [locale, setLocale] = useLocale();
   const m = useMessages();
 
   return (
-    <div className="lang" role="group" aria-label={m.language}>
-      {LOCALES.map((option) => (
-        <button
-          key={option}
-          type="button"
-          lang={HTML_LANG[option]}
-          aria-label={NAMES[option].full}
-          aria-pressed={option === locale}
-          onClick={() => setLocale(option)}
-        >
-          {NAMES[option].short}
-        </button>
-      ))}
-    </div>
+    <label className="lang">
+      <span className="visually-hidden">{m.language}</span>
+      <select value={locale} onChange={(event) => setLocale(event.target.value as Locale)}>
+        {LOCALES.map((option) => (
+          <option key={option} value={option} lang={HTML_LANG[option]}>
+            {LOCALE_NAMES[option]}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

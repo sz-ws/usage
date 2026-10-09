@@ -34,8 +34,8 @@ function CycleTimeline({ cycle, nowMs }: { cycle: Cycle; nowMs: number }) {
       </div>
       <p>
         {m.verdict.timeline({
-          start: formatShortDay(cycle.start),
-          end: formatShortDay(addDays(cycle.end, -1)),
+          start: formatShortDay(cycle.start, m),
+          end: formatShortDay(addDays(cycle.end, -1), m),
           day: today + 1,
           days: cycle.days,
         })}

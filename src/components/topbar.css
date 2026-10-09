@@ -136,31 +136,43 @@
 
 /* The two languages as plain words: the one in use is the darker of the two. */
 .lang {
-  display: flex;
-  gap: 0.15rem;
-  /* The buttons' padding is room for a finger, not space around the words. */
-  margin-right: -0.4rem;
+  position: relative;
+  display: inline-flex;
   margin-left: auto;
 }
 
-.lang button {
-  padding: 0.35rem 0.4rem;
+/* The chevron: the control is the browser's own menu with its arrow replaced. */
+.lang::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0.55rem;
+  width: 0.32rem;
+  height: 0.32rem;
+  border-right: 1.5px solid var(--color-muted);
+  border-bottom: 1.5px solid var(--color-muted);
+  pointer-events: none;
+  transform: translateY(-70%) rotate(45deg);
+}
+
+.lang select {
+  appearance: none;
+  padding: 0.35rem 1.45rem 0.35rem 0.6rem;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   background: none;
   color: var(--color-muted);
   font: inherit;
+  font-size: var(--text-small);
   cursor: pointer;
-  transition: color var(--duration-fast);
+  transition:
+    color var(--duration-fast),
+    background-color var(--duration-fast);
 }
 
-.lang button:hover {
+.lang select:hover {
+  background: var(--color-wash);
   color: var(--color-heading);
-}
-
-.lang button[aria-pressed="true"] {
-  color: var(--color-heading);
-  font-weight: 560;
 }
 
 /*

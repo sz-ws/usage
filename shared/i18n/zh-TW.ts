@@ -121,6 +121,7 @@ export const zhTW: Messages = {
   sentences: ({ parts }) => parts.join(""),
 
   day: ({ month, day }) => `${month} 月 ${day} 日`,
+  shortDay: ({ month, day }) => `${month}/${day}`,
   timeLeft: ({ days, hours, ended }) => {
     if (ended) return "0 小時";
     if (days === 0) return hours === 0 ? "不到 1 小時" : `${hours} 小時`;

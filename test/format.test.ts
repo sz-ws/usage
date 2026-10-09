@@ -65,7 +65,10 @@ describe("dates and durations", () => {
     expect(formatDay("2026-10-03", zh)).toBe("10 月 3 日");
     expect(formatDay("2026-10-03", en)).toBe("Oct 3");
     expect(formatDay("2026-01-31", en)).toBe("Jan 31");
-    expect(formatShortDay("2026-09-13")).toBe("9/13");
+    expect(formatShortDay("2026-09-13", en)).toBe("9/13");
+    expect(formatShortDay("2026-09-13", zh)).toBe("9/13");
+    // Where the day is written first, it is first here too.
+    expect(formatShortDay("2026-09-13", messages("de"))).toBe("13.9.");
   });
 
   it("describes the time left", () => {

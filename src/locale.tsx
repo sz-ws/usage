@@ -15,11 +15,11 @@ function remembered(): Locale | null {
   }
 }
 
-/** A link that asks for a language wins, then the reader's earlier choice, then the browser's first language. */
+/** A link that asks for a language wins, then the reader's earlier choice, then the first of the browser's languages there is a dictionary for. */
 function initialLocale(): Locale {
   const asked = new URLSearchParams(window.location.search).get(QUERY);
   if (asked !== null) return pickLocale(asked);
-  return remembered() ?? pickLocale(navigator.languages?.[0] ?? navigator.language);
+  return remembered() ?? pickLocale(navigator.languages?.join(",") ?? navigator.language);
 }
 
 interface LocaleState {

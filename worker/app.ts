@@ -189,7 +189,7 @@ async function readerOf(request: Request, url: URL, setup: Ready): Promise<"allo
  * GET /api/v1/usage: every account's report as JSON.
  *   ?account=<name or id>  one account only
  *   ?fresh=1               read from Cloudflare first, unless that was done in the last minute
- *   ?lang=en|zh-TW         the language of the sentences; otherwise Accept-Language, then English
+ *   ?lang=<locale>         the language of the sentences; otherwise Accept-Language, then English
  */
 async function report(request: Request, url: URL, env: Env, setup: Ready, reader: Reader): Promise<Response> {
   if (await overLimit(env.API_LIMIT, request)) return refuse("rate-limited", 429, { "retry-after": "60" });

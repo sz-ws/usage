@@ -155,6 +155,7 @@ export const en: Messages = {
   sentences: ({ parts }) => parts.join(" "),
 
   day: ({ month, day }) => `${MONTHS[month - 1] ?? ""} ${day}`,
+  shortDay: ({ month, day }) => `${month}/${day}`,
   timeLeft: ({ days, hours, ended }) => {
     if (ended) return "0 hours";
     if (days === 0) return hours === 0 ? "less than 1 hour" : count(hours, "hour");

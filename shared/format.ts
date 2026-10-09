@@ -69,9 +69,9 @@ export function formatDay(day: IsoDate, m: Messages): string {
   return m.day({ month: Number(day.slice(5, 7)), day: Number(day.slice(8, 10)) });
 }
 
-/** `2026-10-12` as 10/12, for axes and tight columns. */
-export function formatShortDay(day: IsoDate): string {
-  return `${Number(day.slice(5, 7))}/${Number(day.slice(8, 10))}`;
+/** `2026-10-12` in figures, for axes and tight columns: 10/12, or 12/10 where the day comes first. */
+export function formatShortDay(day: IsoDate, m: Messages): string {
+  return m.shortDay({ month: Number(day.slice(5, 7)), day: Number(day.slice(8, 10)) });
 }
 
 const HOUR_MS = 3_600_000;

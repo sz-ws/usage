@@ -22,7 +22,8 @@ page, fetch it as JSON, or let an agent ask for it over MCP.
 - **What changed.** A Worker whose requests tripled this week, storage that
   will pass its allowance in 40 days, one database doing 90% of the reads.
 - **Several accounts** side by side.
-- English and 繁體中文.
+- **Nine languages**: English, 繁體中文, 简体中文, 日本語, 한국어, Español, Français,
+  Deutsch and Português.
 
 ## Deploy
 
@@ -114,7 +115,7 @@ curl -H "Authorization: Bearer $ACCESS_KEY" https://<your-worker>/api/v1/usage
 | --- | --- |
 | `account=<name or id>` | One account only. |
 | `fresh=1` | Read from Cloudflare first, unless that happened in the last minute. Takes several seconds. |
-| `lang=en` or `lang=zh-TW` | Language of the sentences. Defaults to `Accept-Language`, then English. |
+| `lang=<code>` | Language of the sentences: `en`, `zh-TW`, `zh-CN`, `ja`, `ko`, `es`, `fr`, `de` or `pt-BR`. Defaults to `Accept-Language`, then English. |
 
 Answers are `{ "success": true, "data": { "generatedAt", "accounts": [...] }, "error": null }`,
 or `{ "success": false, "data": null, "error": "<code>" }` with 401, 404, 405,
@@ -173,6 +174,14 @@ Everything sits behind the access key. Sessions are signed cookies bound to the
 host; the JSON API and the MCP endpoint are rate limited per IP; agents sign in
 through OAuth 2.1 ([`@cloudflare/workers-oauth-provider`](https://github.com/cloudflare/workers-oauth-provider))
 and the MCP server is the official [TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk).
+
+## Adding a language
+
+Copy `shared/i18n/en.ts` and `worker/text/en.ts` to files named after the
+language tag, translate them, and add the tag to the lists in
+`shared/i18n/index.ts` and `worker/text/index.ts`. The type checker names any
+entry that is missing, and `test/locales.test.ts` builds every sentence for
+every metric in every language.
 
 ## Development
 

@@ -19,31 +19,45 @@ const zh = messages("zh-TW");
 const HAN = /[㐀-鿿豈-﫿]/;
 
 describe("pickLocale", () => {
-  it("reads a ?lang= value", () => {
+  it("reads a ?lang= value, whatever its case", () => {
     expect(pickLocale("en")).toBe("en");
     expect(pickLocale("zh-TW")).toBe("zh-TW");
-    expect(pickLocale("zh")).toBe("zh-TW");
     expect(pickLocale("ZH-tw")).toBe("zh-TW");
-    expect(pickLocale(" zh-Hant ")).toBe("zh-TW");
+    expect(pickLocale("ja")).toBe("ja");
+    expect(pickLocale("pt-BR")).toBe("pt-BR");
+    expect(pickLocale(" de ")).toBe("de");
   });
 
-  it("treats every Chinese as Traditional Chinese, the only one there is", () => {
-    expect(pickLocale("zh-CN")).toBe("zh-TW");
-    expect(pickLocale("zh-Hans-SG")).toBe("zh-TW");
-    expect(pickLocale("zh-HK")).toBe("zh-TW");
+  it("serves a regional variant with the language there is a dictionary for", () => {
+    expect(pickLocale("en-GB")).toBe("en");
+    expect(pickLocale("fr-CA")).toBe("fr");
+    expect(pickLocale("es-MX")).toBe("es");
+    expect(pickLocale("de-AT")).toBe("de");
+    expect(pickLocale("pt")).toBe("pt-BR");
+    expect(pickLocale("pt-PT")).toBe("pt-BR");
+    expect(pickLocale("ko-KR")).toBe("ko");
+    expect(pickLocale("ja-JP")).toBe("ja");
   });
 
-  it("goes by the first language of an Accept-Language header", () => {
+  it("tells Traditional Chinese from Simplified by region or script", () => {
+    for (const tag of ["zh-TW", "zh-HK", "zh-MO", "zh-Hant", "zh-Hant-HK"]) expect(pickLocale(tag), tag).toBe("zh-TW");
+    for (const tag of ["zh-CN", "zh-SG", "zh-Hans", "zh-Hans-SG", "zh"]) expect(pickLocale(tag), tag).toBe("zh-CN");
+  });
+
+  it("takes the first language of an Accept-Language header that it can serve", () => {
     expect(pickLocale("zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7")).toBe("zh-TW");
     expect(pickLocale("en-US,en;q=0.9,zh-TW;q=0.8")).toBe("en");
-    expect(pickLocale("ja,zh-TW;q=0.9")).toBe("en");
+    expect(pickLocale("ja,zh-TW;q=0.9")).toBe("ja");
+    expect(pickLocale("nl-NL,nl;q=0.9,de;q=0.8,en;q=0.7")).toBe("de");
+    expect(pickLocale("sv, fi;q=0.5")).toBe("en");
   });
 
   it("falls back to English for anything else, and for nothing", () => {
     expect(DEFAULT_LOCALE).toBe("en");
-    expect(pickLocale("fr-FR")).toBe("en");
+    expect(pickLocale("tlh")).toBe("en");
     expect(pickLocale("*")).toBe("en");
     expect(pickLocale("")).toBe("en");
+    expect(pickLocale(",;,")).toBe("en");
     expect(pickLocale(null)).toBe("en");
     expect(pickLocale(undefined)).toBe("en");
   });
@@ -66,9 +80,10 @@ describe("the dictionaries", () => {
   }
 
   it("has one for every locale", () => {
-    expect(LOCALES).toEqual(["en", "zh-TW"]);
-    expect(messages("en")).not.toBe(messages("zh-TW"));
-    expect(HTML_LANG).toEqual({ en: "en", "zh-TW": "zh-Hant" });
+    expect(LOCALES.slice(0, 2)).toEqual(["en", "zh-TW"]);
+    expect(new Set(LOCALES.map((locale) => messages(locale))).size).toBe(LOCALES.length);
+    expect(Object.keys(HTML_LANG).sort()).toEqual([...LOCALES].sort());
+    expect(HTML_LANG["zh-TW"]).toBe("zh-Hant");
   });
 
   it("have the same keys all the way down", () => {

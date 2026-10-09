@@ -2,7 +2,7 @@ import { McpServer, createMcpHandler, type McpHttpHandler } from "@modelcontextp
 import { z } from "zod";
 
 import { CATALOG } from "../shared/catalog";
-import { messages, pickLocale } from "../shared/i18n";
+import { LOCALES, messages, pickLocale } from "../shared/i18n";
 import { keyFingerprint } from "./access";
 import type { GrantProps } from "./authorize";
 import { setupOf, type Env } from "./env";
@@ -27,7 +27,7 @@ const INSTRUCTIONS = [
 ].join(" ");
 
 const language = z
-  .enum(["en", "zh-TW"])
+  .enum(LOCALES)
   .optional()
   .describe("Language of the sentences in the answer. Defaults to English.");
 

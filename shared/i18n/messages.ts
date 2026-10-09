@@ -58,6 +58,8 @@ export interface Messages {
 
   /** "Oct 13". */
   day: (p: { month: number; day: number }) => string;
+  /** The same day in figures, for chart axes and tight columns: "10/13", in the order the language writes it. */
+  shortDay: (p: { month: number; day: number }) => string;
   /** "3 days 12 hours". `ended` when there is none left. */
   timeLeft: (p: { days: number; hours: number; ended: boolean }) => string;
   ago: {
