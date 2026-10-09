@@ -8,7 +8,7 @@
 
 ![用量页面：Workers 请求预计在 10 月 19 日超过套餐内的 1000 万次，累计图、当前速度和预估超额费用位于产品列表旁边](../screenshot.png)
 
-一个部署在你自己 Cloudflare 账户里的 Worker。它从 Cloudflare Analytics 读取账户的用量，与套餐内额度比较，推算账期结束时每个产品会落在哪里。可以打开页面查看，用 JSON 获取，或让智能体通过 MCP 查询。数据不会离开你的账户：没有遥测，也没有第三方服务。
+一个部署在你自己 Cloudflare 账户里的 Worker。它从 Cloudflare Analytics 读取账户的用量，与套餐内额度比较，推算账期结束时每个产品会落在哪里。可以打开页面查看，用 JSON 获取，或让智能体通过 MCP 查询。你的用量只从 Cloudflare 传到你的 Worker，不会去别的地方：没有遥测，也没有我们的服务器能看到它。
 
 ## 它会告诉你什么
 
@@ -32,13 +32,11 @@ pnpm demo        # 模拟数据，http://localhost:8798
 
 需要一个使用 **Workers Paid** 套餐的 Cloudflare 账户。除了 Workers Paid 之外，运行它不需要另外付费：它每天向 Cloudflare 读取四次，结果存在 KV 里，只占套餐内额度的一小部分。
 
-1. **按 Deploy to Cloudflare。** 它会创建所需的 KV namespace，并要求填写两个密钥。
-   - `ANALYTICS_TOKEN`：一个只有 **Account Analytics: Read** 权限的 API token。[这个链接](https://dash.cloudflare.com/?to=/:account/api-tokens&permissionGroupKeys=%5B%7B%22key%22%3A%22account_analytics%22%2C%22type%22%3A%22read%22%7D%5D&name=usage)会帮你把表单填好。这个 token 只显示用了多少，不显示存储的内容：它读不到数据库、KV 的值或 R2 的对象，也不能更改任何东西。
-   - `ACCESS_KEY`：页面的访问密钥，至少 24 个字符。`openssl rand -base64 32` 可以生成一个。
-2. **打开 Worker 的地址**，用访问密钥登录。
+1. **按 Deploy to Cloudflare。** 它会创建 Worker 所需的 KV namespace。不需要创建 token，也不需要自己设定密码。
+2. **打开 Worker 的地址，按下“前往 Cloudflare 继续”**，共两次：第一次找出你的账户，第二次让页面读取它们的用量。你允许的权限只显示用了多少，不显示存储的内容：它读不到数据库、KV 的值或 R2 的对象，也不能更改任何东西。
 3. **设置账单每月几号续费。** 这个日期在 Cloudflare 控制台的 Manage Account → Billing → Subscriptions 里。
 
-从克隆的代码部署、同时查看多个账户，或使用你自己的域名：[docs/deploy.md](../deploy.md)（英文）。
+登录时会请求什么、保存什么：[docs/sign-in.md](../sign-in.md)（英文）。改用 API token、从克隆的代码部署，或使用你自己的域名：[docs/deploy.md](../deploy.md)（英文）。
 
 ## 接入智能体
 
@@ -55,6 +53,7 @@ claude mcp add --transport http usage https://<你的 Worker>/mcp
 以下文档为英文。
 
 - [部署与配置](../deploy.md)
+- [用 Cloudflare 登录](../sign-in.md)
 - [智能体、MCP 与 JSON API](../agents.md)
 - [通过 ntfy 或 webhook 发送的提醒](../alerts.md)
 - [工作原理，以及数字从哪里来](../how-it-works.md)
@@ -63,3 +62,5 @@ claude mcp add --transport http usage https://<你的 Worker>/mcp
 ## 许可证
 
 [Apache-2.0](../../LICENSE)
+
+这是一个独立项目，与 Cloudflare, Inc. 没有关联，也未经其认可。Cloudflare 和 Cloudflare 标志是 Cloudflare, Inc. 的商标。

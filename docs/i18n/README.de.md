@@ -8,7 +8,7 @@ Bleibt dein Cloudflare-Konto in diesem Zeitraum im Rahmen des Workers-Paid-Abos,
 
 ![Die Nutzungsseite: Workers-Anfragen werden voraussichtlich am 19. Oktober die enthaltenen 10 Millionen überschreiten, mit Diagramm, Tempo und geschätzten Mehrkosten neben der Produktliste](../screenshot.png)
 
-Ein Worker in deinem eigenen Cloudflare-Konto. Er liest die Nutzung des Kontos aus Cloudflare Analytics, vergleicht sie mit dem, was das Abo enthält, und prognostiziert, wo jedes Produkt am Ende des Zeitraums stehen wird. Du kannst ihn auf einer Seite ansehen, als JSON abrufen oder einen Agenten per MCP fragen lassen. Nichts verlässt dein Konto: Es gibt weder Telemetrie noch einen Drittanbieterdienst.
+Ein Worker in deinem eigenen Cloudflare-Konto. Er liest die Nutzung des Kontos aus Cloudflare Analytics, vergleicht sie mit dem, was das Abo enthält, und prognostiziert, wo jedes Produkt am Ende des Zeitraums stehen wird. Du kannst ihn auf einer Seite ansehen, als JSON abrufen oder einen Agenten per MCP fragen lassen. Deine Nutzung geht von Cloudflare zu deinem Worker und sonst nirgendwohin: Es gibt keine Telemetrie, und kein Server von uns sieht sie.
 
 ## Was es dir sagt
 
@@ -32,13 +32,11 @@ pnpm demo        # erfundene Daten auf http://localhost:8798
 
 Du brauchst ein Cloudflare-Konto mit **Workers Paid**. Außer Workers Paid fallen keine weiteren Kosten an. Der Worker fragt Cloudflare viermal am Tag ab und speichert das Ergebnis in KV. Das ist nur ein kleiner Bruchteil dessen, was das Abo ohnehin enthält.
 
-1. **Drück auf Deploy to Cloudflare.** Es legt den benötigten KV-Namespace an und fragt nach zwei Secrets.
-   - `ANALYTICS_TOKEN`: ein API-Token mit nur einer Berechtigung, **Account Analytics: Read**. [Dieser Link](https://dash.cloudflare.com/?to=/:account/api-tokens&permissionGroupKeys=%5B%7B%22key%22%3A%22account_analytics%22%2C%22type%22%3A%22read%22%7D%5D&name=usage) füllt das Formular vor. Das Token zeigt, wie viel genutzt wurde, und nichts von dem, was gespeichert ist. Das Token kann keine Datenbank, keinen KV-Wert und kein R2-Objekt lesen und nichts ändern.
-   - `ACCESS_KEY`: das Passwort für deine Seite, mindestens 24 Zeichen. Mit `openssl rand -base64 32` erzeugst du eins.
-2. **Öffne die Adresse deines Workers** und melde dich mit dem Zugriffsschlüssel an.
+1. **Drück auf Deploy to Cloudflare.** Es legt den benötigten KV-Namespace an. Du musst kein Token erstellen und kein Passwort wählen.
+2. **Öffne die Adresse deines Workers und drück auf Mit Cloudflare fortfahren**, zweimal: einmal, damit die Seite deine Konten findet, und einmal, damit sie die Nutzung dieser Konten lesen darf. Was du erlaubst, zeigt, wie viel genutzt wurde, und nichts von dem, was gespeichert ist: Es kann keine Datenbank, keinen KV-Wert und kein R2-Objekt lesen und nichts ändern.
 3. **Stell den Tag ein, an dem sich dein Abo verlängert.** Das Datum findest du im Cloudflare-Dashboard unter Manage Account → Billing → Subscriptions.
 
-Aus einem Clone, mit mehreren Konten oder auf einer eigenen Domain: [docs/deploy.md](../deploy.md) (auf Englisch).
+Was die Anmeldung verlangt und speichert: [docs/sign-in.md](../sign-in.md) (auf Englisch). Mit einem API-Token stattdessen, aus einem Clone oder auf einer eigenen Domain: [docs/deploy.md](../deploy.md) (auf Englisch).
 
 ## Einen Agenten verbinden
 
@@ -55,6 +53,7 @@ Der Worker bittet dich, dich anzumelden und ihm den Zugriff zu erlauben. Der Age
 Die folgenden Dokumente sind auf Englisch.
 
 - [Deployment und Konfiguration](../deploy.md)
+- [Anmeldung mit Cloudflare](../sign-in.md)
 - [Agenten, MCP und die JSON-API](../agents.md)
 - [Benachrichtigungen über ntfy oder einen webhook](../alerts.md)
 - [Funktionsweise und Herkunft der Zahlen](../how-it-works.md)
@@ -63,3 +62,5 @@ Die folgenden Dokumente sind auf Englisch.
 ## Lizenz
 
 [Apache-2.0](../../LICENSE)
+
+Ein unabhängiges Projekt, weder mit Cloudflare, Inc. verbunden noch von Cloudflare, Inc. unterstützt. Cloudflare und das Cloudflare-Logo sind Marken von Cloudflare, Inc.

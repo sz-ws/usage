@@ -8,7 +8,7 @@
 
 ![사용량 페이지: Workers 요청이 10월 19일에 기본 제공량인 1,000만 건을 넘을 것으로 예상되며, 제품 목록 옆에 차트, 속도, 예상 초과 요금이 보입니다](../screenshot.png)
 
-Cloudflare 계정 안에 배포하는 Worker 하나입니다. Cloudflare Analytics에서 계정의 사용량을 읽어 요금제의 기본 제공량과 대조하고, 기간이 끝날 때 각 제품이 어디에 있을지 예측합니다. 페이지에서 보거나, JSON으로 받거나, 에이전트가 MCP로 물어보게 할 수 있습니다. 계정 밖으로 나가는 것은 없습니다: 원격 측정도, 제3자 서비스도 없습니다.
+Cloudflare 계정 안에 배포하는 Worker 하나입니다. Cloudflare Analytics에서 계정의 사용량을 읽어 요금제의 기본 제공량과 대조하고, 기간이 끝날 때 각 제품이 어디에 있을지 예측합니다. 페이지에서 보거나, JSON으로 받거나, 에이전트가 MCP로 물어보게 할 수 있습니다. 여러분의 사용량은 Cloudflare에서 여러분의 Worker로만 가고, 그 밖의 어디로도 가지 않습니다: 원격 측정도 없고, 이를 볼 수 있는 저희 서버도 없습니다.
 
 ## 알려주는 것
 
@@ -32,13 +32,11 @@ pnpm demo        # 가상 데이터, http://localhost:8798
 
 **Workers Paid** 요금제의 Cloudflare 계정이 필요합니다. Workers Paid 요금제 외에는 추가 비용이 없습니다. Cloudflare를 하루에 네 번 읽고 결과를 KV에 저장합니다. KV에 저장하는 결과는 요금제에 이미 포함된 양의 아주 작은 일부입니다.
 
-1. **Deploy to Cloudflare 버튼을 누르세요.** 필요한 KV 네임스페이스를 만들고 시크릿 두 개를 묻습니다.
-   - `ANALYTICS_TOKEN`: **Account Analytics: Read** 권한 하나만 있는 API 토큰입니다. [이 링크](https://dash.cloudflare.com/?to=/:account/api-tokens&permissionGroupKeys=%5B%7B%22key%22%3A%22account_analytics%22%2C%22type%22%3A%22read%22%7D%5D&name=usage)를 열면 양식이 미리 채워집니다. 이 토큰은 사용량만 보여 주고, 저장된 내용은 보여 주지 않습니다. 데이터베이스, KV 값 또는 R2 객체를 읽을 수 없고, 아무것도 바꿀 수 없습니다.
-   - `ACCESS_KEY`: 페이지의 비밀번호입니다. 24자 이상이어야 합니다. `openssl rand -base64 32` 명령으로 만들 수 있습니다.
-2. **Worker 주소를 여세요** 그리고 액세스 키로 로그인하세요.
+1. **Deploy to Cloudflare 버튼을 누르세요.** Worker에 필요한 KV 네임스페이스를 만듭니다. 만들 토큰도 없고, 고를 비밀번호도 없습니다.
+2. **Worker 주소를 열고 Cloudflare로 계속하기를 두 번 누르세요.** 한 번은 여러분의 계정을 찾기 위해서, 한 번은 페이지가 그 사용량을 읽도록 하기 위해서입니다. 여러분이 허락하는 것은 얼마나 썼는지만 보여 주고, 저장된 것은 아무것도 보여 주지 않습니다. 데이터베이스, KV 값, R2 객체를 읽을 수 없고, 아무것도 바꿀 수 없습니다.
 3. **청구가 갱신되는 날을 설정하세요.** Cloudflare 대시보드의 Manage Account → Billing → Subscriptions에 있습니다.
 
-클론에서 배포하기, 여러 계정 함께 보기, 자신의 도메인 사용하기: [docs/deploy.md](../deploy.md) (영어).
+로그인할 때 요청하는 것과 보관하는 것: [docs/sign-in.md](../sign-in.md) (영어). API 토큰을 대신 쓰거나, 클론에서 배포하거나, 자신의 도메인을 쓴다면: [docs/deploy.md](../deploy.md) (영어).
 
 ## 에이전트 연결
 
@@ -55,6 +53,7 @@ Worker가 로그인하고 허용하라고 요청합니다. 그러면 에이전�
 아래 문서는 영어입니다.
 
 - [배포와 설정](../deploy.md)
+- [Cloudflare로 로그인하기](../sign-in.md)
 - [에이전트, MCP, JSON API](../agents.md)
 - [ntfy 또는 webhook으로 받는 알림](../alerts.md)
 - [작동 방식과 숫자의 출처](../how-it-works.md)
@@ -63,3 +62,5 @@ Worker가 로그인하고 허용하라고 요청합니다. 그러면 에이전�
 ## 라이선스
 
 [Apache-2.0](../../LICENSE)
+
+독립 프로젝트이며, Cloudflare, Inc.와 제휴하거나 그 승인을 받은 것이 아닙니다. Cloudflare와 Cloudflare 로고는 Cloudflare, Inc.의 상표입니다.

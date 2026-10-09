@@ -8,7 +8,7 @@
 
 ![用量頁面：Workers 請求預估在 10 月 19 日用完內含的 1,000 萬次，旁邊是累計圖、目前的速度和預估的超額費用](../screenshot.png)
 
-一個部署在你自己 Cloudflare 帳號裡的 Worker。它從 Cloudflare Analytics 讀出帳號的用量，跟方案內含的額度比，推算帳期結束時每個產品會落在哪裡。可以開頁面看、用 JSON 抓，或讓 agent 透過 MCP 問。資料不會離開你的帳號：沒有遙測，也沒有第三方服務。
+一個部署在你自己 Cloudflare 帳號裡的 Worker。它從 Cloudflare Analytics 讀出帳號的用量，跟方案內含的額度比，推算帳期結束時每個產品會落在哪裡。可以開頁面看、用 JSON 抓，或讓 agent 透過 MCP 問。你的用量只會從 Cloudflare 到你的 Worker，不會去別的地方：沒有遙測，我們也沒有任何伺服器看得到它。
 
 ## 它會告訴你
 
@@ -32,13 +32,11 @@ pnpm demo        # 假資料，http://localhost:8798
 
 需要一個 **Workers Paid** 的 Cloudflare 帳號。除此之外不用另外付錢：它一天向 Cloudflare 讀四次，結果存在 KV，只佔方案內含額度的一小部分。
 
-1. **按 Deploy to Cloudflare。** 它會建好需要的 KV namespace，並要兩個密鑰。
-   - `ANALYTICS_TOKEN`：只有一個權限 **Account Analytics: Read** 的 API token。[這個連結](https://dash.cloudflare.com/?to=/:account/api-tokens&permissionGroupKeys=%5B%7B%22key%22%3A%22account_analytics%22%2C%22type%22%3A%22read%22%7D%5D&name=usage)會幫你把表單填好。這個 token 只看得到用了多少，看不到存了什麼：它讀不到資料庫、KV 的值或 R2 的檔案，也不能更改任何東西。
-   - `ACCESS_KEY`：頁面的密碼，至少 24 個字元。用 `openssl rand -base64 32` 產生一組。
-2. **打開 Worker 的網址**，用存取金鑰登入。
+1. **按 Deploy to Cloudflare。** 它會建好 Worker 需要的 KV namespace。不用建 token，也不用設密碼。
+2. **打開 Worker 的網址，按「前往 Cloudflare 繼續」**，一共兩次：一次找出你的帳號，一次讓頁面讀取它們的用量。你允許的權限只看得到用了多少，看不到存了什麼：它讀不到資料庫、KV 的值或 R2 的檔案，也不能更改任何東西。
 3. **設定帳單每月幾號續約。** 在 Cloudflare dashboard 的 Manage Account → Billing → Subscriptions。
 
-從 clone 部署、同時看多個帳號、用自己的網域：[docs/deploy.md](../deploy.md)（英文）。
+登入時會要求什麼、會留下什麼：[docs/sign-in.md](../sign-in.md)（英文）。改用 API token、從 clone 部署、用自己的網域：[docs/deploy.md](../deploy.md)（英文）。
 
 ## 接上 agent
 
@@ -55,6 +53,7 @@ Worker 會請你登入並決定要不要允許，agent 拿到的是它自己的�
 以下文件是英文。
 
 - [部署與設定](../deploy.md)
+- [用 Cloudflare 登入](../sign-in.md)
 - [Agent、MCP 與 JSON API](../agents.md)
 - [透過 ntfy 或 webhook 的警告](../alerts.md)
 - [運作方式，以及數字的來源](../how-it-works.md)
@@ -63,3 +62,5 @@ Worker 會請你登入並決定要不要允許，agent 拿到的是它自己的�
 ## 授權
 
 [Apache-2.0](../../LICENSE)
+
+這是獨立的專案，與 Cloudflare, Inc. 沒有關聯，也未經其認可。Cloudflare 與 Cloudflare 標誌是 Cloudflare, Inc. 的商標。
