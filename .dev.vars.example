@@ -1,9 +1,11 @@
-# Copy to .dev.vars for local development. On a deployed Worker these are secrets.
+# For a deployment that reads with an API token instead of a Cloudflare
+# sign-in (docs/deploy.md). Copy to .dev.vars and remove the "# " in front of
+# both names. On a deployed Worker these are secrets.
 
 # A Cloudflare API token with one permission, Account Analytics: Read.
 # Several accounts: one token per account, separated by commas.
-ANALYTICS_TOKEN=
+# ANALYTICS_TOKEN=
 
 # The password for the page, at least 24 characters.
 # openssl rand -base64 32
-ACCESS_KEY=
+# ACCESS_KEY=

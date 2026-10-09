@@ -1,55 +1,22 @@
 # Signing in with Cloudflare
 
-A deployment can read your usage through your own Cloudflare sign-in instead
-of an API token. There is no token to create and no access key to choose. You
-press a button and Cloudflare asks you to allow it.
+A deployment reads your usage through your own Cloudflare sign-in. There is no
+token to create and no access key to choose: you press a button and Cloudflare
+asks you to allow it.
 
-A deployment works one way or the other. With `ANALYTICS_TOKEN` set it reads
-with the token, as described in [Deploying and configuring](deploy.md).
-Without it, and with an OAuth client configured, it works as described here.
+A deployment that has `ANALYTICS_TOKEN` set reads with the token instead and
+never signs in with Cloudflare, as described in
+[Deploying and configuring](deploy.md).
 
 ## What you need
 
-An OAuth client registered with Cloudflare. None is built in, so you create
-one in your own account. It has no secret.
+Nothing beyond the deployment. On Cloudflare's pages the application is called
+**Usage**, published from `usage.sz.ws`.
 
-1. In the Cloudflare dashboard, open **Manage Account → OAuth clients** and
-   select **Create client**.
-2. Fill in the form:
-
-   | Field | Value |
-   | --- | --- |
-   | Client Name | anything, for example `Usage` |
-   | Response Type | Code |
-   | Grant type | Authorization Code, and add Refresh Token |
-   | Token Authentication Method | None |
-   | Redirect (Callback) URLs | `https://<your-worker>/connect/callback` |
-
-3. On the next page choose two scopes: **Account Analytics Read** and
-   **Account Settings Read**.
-4. Leave the client private. A private client can be used by members of the
-   account that owns it, which is everyone who should see this page.
-
-Then give the Worker the client's id and the address you registered. They are
-not secrets, so they go in `wrangler.jsonc`:
-
-```jsonc
-"vars": {
-  "CF_OAUTH_CLIENT_ID": "<client id>",
-  "CF_OAUTH_CALLBACK_URL": "https://<your-worker>/connect/callback"
-}
-```
-
-Deploy with `pnpm run deploy`, and leave `ANALYTICS_TOKEN` unset.
-
-The address in `CF_OAUTH_CALLBACK_URL` must be exactly the one registered with
-the client, or Cloudflare refuses the sign-in. Open the Worker at that address
-too: started from another of its hostnames, such as `workers.dev` beside a
-custom domain, a sign-in cannot finish.
-
-If the Worker still asks for `ANALYTICS_TOKEN` and `ACCESS_KEY`, one of the two
-variables is not being read: the id is 32 lowercase hex characters, and the
-address has no query string.
+After you allow it, Cloudflare sends your browser to `usage.sz.ws/callback`.
+That page shows the address of your Worker and waits. Press **Continue** if
+the address is yours, and close the tab if it is not: whoever runs the address
+shown there can read the usage you just allowed.
 
 ## Connecting
 
@@ -125,20 +92,64 @@ nothing else: it is not a way into the page.
 
 - An account administrator can turn off **Public OAuth App access** under
   Manage Account → Members → Settings, which stops sign-ins through a client
-  that belongs to another account.
+  that belongs to another account. Use [a client of your own](#a-client-of-your-own)
+  or [an API token](deploy.md#with-an-api-token-instead).
 - Signing in needs Cloudflare's own page each time, and that page always asks
   which account to use. There is no way to skip it.
 
-## One client for many deployments
+## What passes through usage.sz.ws
 
-Cloudflare only returns a sign-in to an address registered with the client,
-and every deployment has an address of its own. A client meant for everyone
-therefore registers one address, the relay in [`relay/`](../relay/README.md):
-a static page that shows where the sign-in is going and, once you confirm,
-passes Cloudflare's one-time code on to your Worker. The code is no use
-without a second value that your Worker left in your browser and that the
-relay never receives, and your usage and the access itself go straight
-between your Worker and Cloudflare.
+Cloudflare only returns a sign-in to an address registered in advance, and
+every deployment has an address of its own. So they share one: a static page,
+the [`relay/`](../relay/README.md) folder of this repository as served at
+`usage.sz.ws`. Cloudflare's one-time code passes through it, in your browser,
+on the way to your Worker. The code is no use without a second value that
+your Worker left in your browser and that the page never receives. Your usage
+and the access itself go straight between your Worker and Cloudflare.
 
-A client of your own, with a callback on the Worker's own address, does not
-use the relay.
+## A client of your own
+
+To sign in without `usage.sz.ws`, register a client in your own Cloudflare
+account. It has no secret, and Cloudflare then returns straight to your
+Worker.
+
+1. In the Cloudflare dashboard, open **Manage Account → OAuth clients** and
+   select **Create client**.
+2. Fill in the form:
+
+   | Field | Value |
+   | --- | --- |
+   | Client Name | anything, for example `Usage` |
+   | Response Type | Code |
+   | Grant type | Authorization Code, and add Refresh Token |
+   | Token Authentication Method | None |
+   | Redirect (Callback) URLs | `https://<your-worker>/connect/callback` |
+
+3. On the next page choose two scopes: **Account Analytics Read** and
+   **Account Settings Read**.
+4. Leave the client private. A private client can be used by members of the
+   account that owns it, which is everyone who should see this page.
+
+Then give the Worker the client's id and the address you registered. They are
+not secrets, so they go in `wrangler.jsonc`:
+
+```jsonc
+"vars": {
+  "CF_OAUTH_CLIENT_ID": "<client id>",
+  "CF_OAUTH_CALLBACK_URL": "https://<your-worker>/connect/callback"
+}
+```
+
+Deploy with `pnpm run deploy`, and leave `ANALYTICS_TOKEN` unset.
+
+The address in `CF_OAUTH_CALLBACK_URL` must be exactly the one registered with
+the client, or Cloudflare refuses the sign-in. Open the Worker at that address
+too: started from another of its hostnames, such as `workers.dev` beside a
+custom domain, a sign-in cannot finish.
+
+If the Worker still asks for `ANALYTICS_TOKEN` and `ACCESS_KEY`, one of the two
+variables is not being read: the id is 32 lowercase hex characters, and the
+address has no query string.
+
+Under `wrangler dev`, a Worker on plain `http` can only sign in this way,
+with `http://localhost:<port>/connect/callback` registered.

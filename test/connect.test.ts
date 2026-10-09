@@ -197,6 +197,19 @@ describe("how a deployment is set up", () => {
     expect(setup).toMatchObject({ ready: true, mode: "keys" });
   });
 
+  it("uses the built-in client and its relay when the deployment names none", async () => {
+    const bare = () => env({ CF_OAUTH_CLIENT_ID: undefined, CF_OAUTH_CALLBACK_URL: undefined });
+    const visitor = browser(bare);
+
+    const shown = await visitor.send("/signin");
+    expect(await shown.text()).toContain("Connect Cloudflare");
+    expect(shown.headers.get("content-security-policy")).toContain("https://dash.cloudflare.com https://usage.sz.ws");
+
+    const address = new URL((await visitor.start()).headers.get("location") ?? "");
+    expect(address.searchParams.get("client_id")).toBe("602bf8dab95b977ded33458b8d0aa8f6");
+    expect(address.searchParams.get("redirect_uri")).toBe("https://usage.sz.ws/callback");
+  });
+
   it("is not set up when the client is only half named or is not one", () => {
     const missing = { ready: false, missing: ["ANALYTICS_TOKEN", "ACCESS_KEY"], shortKey: false };
     expect(setupOf({ CF_OAUTH_CLIENT_ID: CLIENT })).toEqual(missing);
@@ -271,6 +284,27 @@ describe("before anyone has connected", () => {
     const response = await app.fetch(request as Parameters<typeof app.fetch>[0], env(), context.ctx);
     expect(response.status).toBe(400);
     expect(await response.text()).toContain("Sign-in did not finish");
+  });
+
+  it("says so on plain http when the answer would come through a relay on https", async () => {
+    const start = (bindings: Env) =>
+      app.fetch(
+        new Request("http://localhost:8797/connect/start", {
+          method: "POST",
+          body: new URLSearchParams({}),
+          headers: { "content-type": "application/x-www-form-urlencoded", origin: "http://localhost:8797" },
+        }) as Parameters<typeof app.fetch>[0],
+        bindings,
+        fakeContext().ctx,
+      );
+
+    // The browser would not send this page's cookie back with the relay's form.
+    const refused = await start(env());
+    expect(refused.status).toBe(400);
+    expect(await refused.text()).toContain("Sign-in did not finish");
+    // A relay on this computer, or a callback on the page's own address, is fine.
+    expect((await start(env({ CF_OAUTH_CALLBACK_URL: "http://localhost:8795/callback" }))).status).toBe(303);
+    expect((await start(env({ CF_OAUTH_CALLBACK_URL: "http://localhost:8797/connect/callback" }))).status).toBe(303);
   });
 
   it("starts only from its own page", async () => {
