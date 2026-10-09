@@ -213,10 +213,10 @@ export function App() {
         <main className="page-body">
           <Setup
             key={account.id}
+            accountId={account.id}
             saving={saving === account.id}
             onSave={(day) => void changeRenewalDay(account, day)}
           />
-          <SignOut />
         </main>
       ) : account.snapshot ? (
         <Account
