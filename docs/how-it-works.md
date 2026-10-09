@@ -40,10 +40,10 @@ tools all read that stored reading and do the same arithmetic on it.
 
 ## Who can get in
 
-Everything sits behind one secret, `ACCESS_KEY`.
+On a deployment that reads with an API token, everything sits behind one
+secret, `ACCESS_KEY`.
 
-- **The page**: the key starts a session, a signed cookie bound to the host
-  that lasts 30 days.
+- **The page**: the key starts a session, a signed cookie bound to the host.
 - **Scripts**: the key as a bearer token on `/api/v1/usage`.
 - **Agents**: OAuth 2.1 through
   [`@cloudflare/workers-oauth-provider`](https://github.com/cloudflare/workers-oauth-provider).
@@ -54,6 +54,14 @@ Changing the key ends every session and every agent's access. The JSON API, the
 MCP endpoint and sign-in attempts are rate limited per caller. The Cloudflare
 API token never leaves the Worker: it is not stored in KV, logged, or returned
 by any endpoint.
+
+A deployment that [signs in with Cloudflare](sign-in.md) has no key for the
+page. A person gets a session when their own Cloudflare sign-in can read the
+analytics of the account the Worker runs in; the Worker recognises that
+account by finding its own version id in the account's Workers analytics.
+Sessions are signed with a key the Worker made when it was connected, and
+agents' tokens are tied to that key. Either way, a session lasts 30 days from
+the owner's last visit.
 
 The MCP server is the official
 [TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk).

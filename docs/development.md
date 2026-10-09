@@ -15,6 +15,20 @@ README's screenshot comes from.
 For `pnpm dev:web`, keep `pnpm dev:worker` running and sign in on :8797 first;
 the session cookie is for `localhost`, whatever the port.
 
+To run a deployment that [signs in with Cloudflare](sign-in.md), register
+`http://localhost:8797/connect/callback` with a client of your own and start
+the Worker from a variables file that has no token in it. `--env-file` takes
+the place of `.dev.vars` for that run:
+
+```sh
+printf 'CF_OAUTH_CLIENT_ID=<client id>\nCF_OAUTH_CALLBACK_URL=http://localhost:8797/connect/callback\nHOME_ACCOUNT_ID=<account id>\n' > .dev.vars.signin
+pnpm build && ./node_modules/.bin/wrangler dev --env-file .dev.vars.signin
+```
+
+`HOME_ACCOUNT_ID` is needed locally because a Worker on your machine has no
+runs in Cloudflare's analytics to recognise its account by. Call `wrangler`
+directly: `pnpm exec` takes `--env-file` for itself.
+
 ## Layout
 
 | Path | What |

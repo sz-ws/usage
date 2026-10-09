@@ -58,7 +58,8 @@ small fraction of what the plan already includes.
    Subscriptions in the Cloudflare dashboard.
 
 From a clone, with several accounts, or on your own domain:
-[docs/deploy.md](docs/deploy.md).
+[docs/deploy.md](docs/deploy.md). To sign in with Cloudflare instead of
+creating a token and a key: [docs/sign-in.md](docs/sign-in.md).
 
 ## Connect an agent
 
@@ -76,6 +77,7 @@ token of its own. Other clients, the tools and the JSON API:
 ## Documentation
 
 - [Deploying and configuring](docs/deploy.md)
+- [Signing in with Cloudflare instead of a token](docs/sign-in.md)
 - [Agents, MCP and the JSON API](docs/agents.md)
 - [Alerts through ntfy or a webhook](docs/alerts.md)
 - [How it works, and where the numbers come from](docs/how-it-works.md)
@@ -84,3 +86,6 @@ token of its own. Other clients, the tools and the JSON API:
 ## License
 
 [Apache-2.0](LICENSE)
+
+An independent project, not affiliated with or endorsed by Cloudflare, Inc.
+Cloudflare and the Cloudflare logo are trademarks of Cloudflare, Inc.
