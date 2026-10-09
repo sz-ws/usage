@@ -13,6 +13,7 @@
     "dev": "vite build && wrangler dev",
     "dev:web": "vite",
     "dev:worker": "wrangler dev",
+    "demo": "vite build && node scripts/demo.mjs",
     "build": "vite build",
     "deploy": "vite build && wrangler deploy",
     "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.worker.json --noEmit",
