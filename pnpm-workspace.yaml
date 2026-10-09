@@ -1,0 +1,8 @@
+# esbuild and workerd unpack their binaries in a postinstall step. pnpm 10 reads
+# the first key, pnpm 11 the second; Cloudflare's build image ships pnpm 10.
+onlyBuiltDependencies:
+  - esbuild
+  - workerd
+allowBuilds:
+  esbuild: true
+  workerd: true

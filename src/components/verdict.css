@@ -1,0 +1,132 @@
+.verdict {
+  --tile: var(--tile-ok);
+  --tile-ink: var(--ok-ink);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(11rem, 16rem) auto;
+  gap: 0.75rem 2.5rem;
+  align-items: center;
+  padding: 1.15rem 1.5rem;
+  border-radius: var(--radius-card);
+  background: var(--tile);
+}
+
+.verdict[data-tone="watch"] {
+  --tile: var(--tile-watch);
+  --tile-ink: var(--watch-ink);
+}
+
+.verdict[data-tone="over"] {
+  --tile: var(--tile-over);
+  --tile-ink: var(--over-ink);
+}
+
+.verdict h1 {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--color-heading);
+  text-wrap: balance;
+}
+
+.verdict-text p {
+  margin: 0.3rem 0 0;
+  font-size: var(--text-base);
+  color: var(--color-body);
+  text-wrap: pretty;
+}
+
+.timeline {
+  font-size: 0.75rem;
+  color: var(--tile-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline p {
+  margin: 0.3rem 0 0;
+  white-space: nowrap;
+}
+
+.timeline-days {
+  display: grid;
+  grid-template-columns: repeat(var(--days), minmax(0, 1fr));
+  gap: 2px;
+  align-items: end;
+  height: 1.1rem;
+}
+
+.timeline-days span {
+  height: 60%;
+  border-radius: 2px;
+  background: var(--tile-ink);
+}
+
+.timeline-days [data-state="ahead"] {
+  opacity: 0.22;
+}
+
+.timeline-days [data-state="today"] {
+  height: 100%;
+  background: var(--color-heading);
+}
+
+.renewal {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--text-small);
+  color: var(--tile-ink);
+  white-space: nowrap;
+}
+
+.renewal-select {
+  position: relative;
+  display: inline-flex;
+}
+
+.renewal-select::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-right: 1.5px solid currentcolor;
+  border-bottom: 1.5px solid currentcolor;
+  pointer-events: none;
+  transform: translateY(-70%) rotate(45deg);
+}
+
+.renewal select {
+  appearance: none;
+  padding: 0.2rem 1.35rem 0.2rem 0.55rem;
+  border: 0;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.6);
+  color: var(--color-heading);
+  font: inherit;
+  font-weight: 560;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background-color var(--duration-fast);
+}
+
+.renewal select:hover {
+  background: rgb(255 255 255 / 0.9);
+}
+
+@media (max-width: 56rem) {
+  .verdict {
+    grid-template-columns: minmax(7rem, 1fr) auto;
+    gap: 0.6rem 1rem;
+  }
+
+  .verdict-text {
+    grid-column: 1 / -1;
+  }
+
+  .timeline p {
+    white-space: normal;
+  }
+}

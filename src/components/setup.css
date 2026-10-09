@@ -1,0 +1,68 @@
+.setup {
+  /* The day picker is the verdict's; here it sits on a plain surface. */
+  --tile-ink: var(--color-body);
+
+  max-width: 34rem;
+  padding: 1.5rem 1.6rem 1.6rem;
+  border-radius: var(--radius-card);
+  background: var(--color-wash);
+}
+
+.setup h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--color-heading);
+  text-wrap: balance;
+}
+
+.setup p {
+  margin: 0;
+  font-size: var(--text-small);
+  text-wrap: pretty;
+}
+
+.setup form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  margin-top: 1.1rem;
+}
+
+.setup .renewal select {
+  background: var(--color-card);
+  box-shadow: inset 0 0 0 1px var(--color-hairline-strong);
+}
+
+.setup .renewal select:hover {
+  box-shadow: inset 0 0 0 1px var(--color-muted);
+}
+
+.setup button {
+  padding: 0.4rem 1rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--color-heading);
+  color: var(--color-bg);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: 560;
+  cursor: pointer;
+  transition: opacity var(--duration-fast);
+}
+
+.setup button:hover {
+  opacity: 0.86;
+}
+
+.setup button:active {
+  transform: translateY(1px);
+}
+
+.setup button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

@@ -1,0 +1,59 @@
+{
+  "name": "usage",
+  "version": "0.1.0",
+  "description": "Will this Cloudflare account stay inside its plan this billing period? A page, a JSON API and an MCP server on one Worker.",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "packageManager": "pnpm@10.11.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite build && wrangler dev",
+    "dev:web": "vite",
+    "dev:worker": "wrangler dev",
+    "build": "vite build",
+    "deploy": "vite build && wrangler deploy",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.worker.json --noEmit",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
+    "check": "pnpm typecheck && pnpm test"
+  },
+  "cloudflare": {
+    "label": "Usage",
+    "products": [
+      "Workers",
+      "KV"
+    ],
+    "bindings": {
+      "ANALYTICS_TOKEN": {
+        "description": "A Cloudflare API token with one permission, **Account Analytics: Read**. [Create it here](https://dash.cloudflare.com/?to=/:account/api-tokens&permissionGroupKeys=%5B%7B%22key%22%3A%22account_analytics%22%2C%22type%22%3A%22read%22%7D%5D&name=usage). For several accounts, separate the tokens with commas."
+      },
+      "ACCESS_KEY": {
+        "description": "The password for your usage page, at least 24 characters. Generate one with `openssl rand -base64 32`."
+      },
+      "OAUTH_KV": {
+        "description": "Stores the usage readings, your settings and agent sign-ins."
+      }
+    }
+  },
+  "dependencies": {
+    "@cloudflare/workers-oauth-provider": "^1.2.3",
+    "@modelcontextprotocol/server": "^2.3.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261008.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "@vitest/coverage-v8": "^5.0.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3",
+    "wrangler": "^4.148.0"
+  }
+}

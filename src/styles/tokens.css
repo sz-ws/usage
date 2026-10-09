@@ -1,0 +1,63 @@
+/*
+ * Warm off-white page, warm charcoal ink, hairlines drawn as inset shadows,
+ * Inter throughout, and three status ramps. Colour here always means a state,
+ * never decoration.
+ */
+:root {
+  color-scheme: light;
+
+  --color-bg: #fbfaf9;
+  --color-card: #ffffff;
+  --color-wash: #f3f1ee;
+  --color-wash-strong: #e9e6e1;
+  --color-heading: #343433;
+  --color-body: #494440;
+  --color-muted: #7a7774;
+  --color-faint: #a8a5a1;
+  --color-hairline: #eaeaea;
+  --color-hairline-strong: #dcdad6;
+
+  /* Verdict tiles: one pastel per state. */
+  --tile-ok: #def2e5;
+  --tile-watch: #fdeecd;
+  --tile-over: #fbe1d6;
+  /* Text that sits on a tile or a flag of that state. */
+  --ok-ink: #2f6b48;
+  --watch-ink: #7a5410;
+  --over-ink: #9c3210;
+
+  /* Meter ramps: track, where it is heading, used so far. One hue per state, light to dark. */
+  --ok-track: #ebe8e3;
+  --ok-ahead: #bcb8b1;
+  --ok-fill: #343433;
+  --watch-track: #f7e9cb;
+  --watch-ahead: #e6c47c;
+  --watch-fill: #b97f12;
+  --over-track: #fbdccf;
+  --over-ahead: #f1a388;
+  --over-fill: #d9481a;
+
+  --chart-previous: #c4c0b9;
+
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "PingFang TC", "Noto Sans TC",
+    Arial, sans-serif;
+
+  --text-small: 0.84rem;
+  --text-base: 0.95rem;
+  --text-title: clamp(1.3rem, 1.1rem + 0.9vw, 1.75rem);
+
+  --space-page: clamp(1rem, 0.4rem + 2.4vw, 2.25rem);
+  --space-section: clamp(1.1rem, 0.9rem + 0.8vw, 1.6rem);
+
+  --radius-tile: 26px;
+  --radius-card: 16px;
+  --radius-control: 10px;
+
+  --duration-fast: 180ms;
+  --duration-normal: 320ms;
+  --duration-slow: 640ms;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --maxw: 80rem;
+}

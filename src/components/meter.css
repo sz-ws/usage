@@ -1,0 +1,78 @@
+.meter {
+  --track: var(--ok-track);
+  --heading-to: var(--ok-ahead);
+  --fill: var(--ok-fill);
+  position: relative;
+  display: block;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--track);
+}
+
+.meter[data-tone="watch"] {
+  --track: var(--watch-track);
+  --heading-to: var(--watch-ahead);
+  --fill: var(--watch-fill);
+}
+
+.meter[data-tone="over"] {
+  --track: var(--over-track);
+  --heading-to: var(--over-ahead);
+  --fill: var(--over-fill);
+}
+
+.meter-none {
+  background: none;
+}
+
+.meter-ahead,
+.meter-used {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  border-radius: inherit;
+  transform-origin: left center;
+  animation: meter-grow var(--duration-slow) var(--ease-out-expo) backwards;
+  animation-delay: calc(var(--row-index, 0) * 35ms);
+}
+
+.meter-ahead {
+  width: calc(var(--ahead) * 100%);
+  background: var(--heading-to);
+}
+
+/* A sliver stays visible however small the share is: "a little" is not "nothing". */
+.meter-used {
+  width: calc(var(--used) * 100%);
+  min-width: 3px;
+  background: var(--fill);
+}
+
+.meter-used[data-empty] {
+  display: none;
+}
+
+.meter-pace {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: calc(var(--pace) * 100%);
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--color-heading);
+  box-shadow: 0 0 0 2px var(--surface, var(--color-bg));
+}
+
+@keyframes meter-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meter-ahead,
+  .meter-used {
+    animation: none;
+  }
+}

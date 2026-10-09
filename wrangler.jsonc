@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "usage",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  // nodejs_compat: the MCP SDK. global_fetch_strictly_public: an MCP client may
+  // identify itself by a URL the Worker then fetches; this keeps that fetch on
+  // the public internet.
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": "dist",
+    "binding": "ASSETS",
+    // Every request, static files included, goes through the sign-in check first.
+    "run_worker_first": true,
+    "not_found_handling": "single-page-application"
+  },
+  // Readings, settings and agent sign-ins. No id: `wrangler deploy` and the
+  // Deploy to Cloudflare button both create the namespace on first deploy.
+  "kv_namespaces": [{ "binding": "OAUTH_KV" }],
+  // Per caller IP (per /64 for IPv6). These count per Cloudflare location, so
+  // they let more through than the number says: a ceiling on floods, not a meter.
+  "ratelimits": [
+    // The JSON API, the MCP endpoint and token requests.
+    { "name": "API_LIMIT", "namespace_id": "73101", "simple": { "limit": 60, "period": 60 } },
+    // Access key attempts.
+    { "name": "SIGNIN_LIMIT", "namespace_id": "73102", "simple": { "limit": 10, "period": 60 } },
+    // MCP clients registering themselves.
+    { "name": "REGISTER_LIMIT", "namespace_id": "73103", "simple": { "limit": 10, "period": 60 } }
+  ],
+  // Re-reads usage four times a day so the page opens on recent numbers.
+  "triggers": { "crons": ["17 */6 * * *"] },
+  "observability": { "enabled": true },
+  "dev": { "port": 8797 }
+}

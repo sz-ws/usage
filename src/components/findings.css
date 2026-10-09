@@ -1,0 +1,75 @@
+.findings {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.25rem 1.25rem;
+  align-items: baseline;
+  font-size: 0.9rem;
+}
+
+.findings h2 {
+  margin: 0;
+  font-size: inherit;
+}
+
+.findings ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  gap: 0.15rem 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.findings button,
+.findings p {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0.25rem 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--color-heading);
+  font: inherit;
+  text-align: left;
+  text-wrap: pretty;
+}
+
+.findings button {
+  cursor: pointer;
+  transition: color var(--duration-fast);
+}
+
+.findings button:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--color-hairline-strong);
+  text-underline-offset: 0.25em;
+}
+
+/* Shape carries the level as well as colour: square for over, diamond for watch, dot for a note. */
+.finding-mark {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-right: 0.6rem;
+  border-radius: 50%;
+  background: var(--color-faint);
+  vertical-align: 0.08em;
+}
+
+[data-tone="watch"] .finding-mark {
+  border-radius: 1px;
+  background: var(--watch-fill);
+  transform: rotate(45deg);
+}
+
+[data-tone="over"] .finding-mark {
+  border-radius: 1px;
+  background: var(--over-fill);
+}
+
+@media (max-width: 40rem) {
+  .findings {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

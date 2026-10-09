@@ -1,0 +1,143 @@
+.chart {
+  margin: 0;
+  min-width: 0;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.1rem;
+  margin-bottom: 0.6rem;
+  font-size: var(--text-small);
+  color: var(--color-muted);
+}
+
+/* Line keys mirror the marks: a short stroke, never a filled box. */
+.chart-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.chart-key::before {
+  content: "";
+  width: 1.1rem;
+  border-top: 2px solid var(--color-heading);
+}
+
+.chart-key-projection::before {
+  border-top-style: dashed;
+}
+
+.chart-key-previous::before {
+  border-top-color: var(--chart-previous);
+}
+
+.chart-key-limit::before {
+  border-top-width: 1px;
+  border-top-color: var(--over-fill);
+}
+
+.chart-plot {
+  position: relative;
+  border-radius: var(--radius-control);
+  outline-offset: 4px;
+}
+
+.chart-plot svg {
+  display: block;
+}
+
+.chart-grid {
+  stroke: var(--color-hairline);
+  stroke-width: 1;
+}
+
+.chart-tick {
+  fill: var(--color-muted);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chart-line-actual {
+  stroke: var(--color-heading);
+}
+
+.chart-line-projection {
+  stroke: var(--color-heading);
+  stroke-dasharray: 2 5;
+}
+
+.chart-line-previous {
+  stroke: var(--chart-previous);
+}
+
+.chart-limit {
+  stroke: var(--over-fill);
+  stroke-width: 1;
+}
+
+.chart-crosshair {
+  stroke: var(--color-hairline-strong);
+  stroke-width: 1;
+}
+
+.chart-dot {
+  fill: var(--color-heading);
+  stroke: var(--color-card);
+  stroke-width: 2;
+}
+
+.chart-hit {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.chart-tip {
+  position: absolute;
+  z-index: 1;
+  min-width: 8.5rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-control);
+  background: var(--color-heading);
+  color: #fff;
+  font-size: var(--text-small);
+  pointer-events: none;
+  transform: translate(0.75rem, -50%);
+}
+
+.chart-tip[data-flip] {
+  transform: translate(calc(-100% - 0.75rem), -50%);
+}
+
+.chart-tip p {
+  margin: 0;
+}
+
+.chart-tip-day {
+  margin-bottom: 0.25rem;
+  color: rgb(255 255 255 / 0.62);
+}
+
+/* Values lead, labels follow: the reader already knows the series and wants the number. */
+.chart-tip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-tip-row strong {
+  font-weight: 600;
+}
+
+.chart-tip-row span {
+  color: rgb(255 255 255 / 0.62);
+}

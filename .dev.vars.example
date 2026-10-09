@@ -1,0 +1,9 @@
+# Copy to .dev.vars for local development. On a deployed Worker these are secrets.
+
+# A Cloudflare API token with one permission, Account Analytics: Read.
+# Several accounts: one token per account, separated by commas.
+ANALYTICS_TOKEN=
+
+# The password for the page, at least 24 characters.
+# openssl rand -base64 32
+ACCESS_KEY=
