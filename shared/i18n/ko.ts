@@ -406,6 +406,7 @@ export const ko: Messages = {
   },
 
   reconnect: "다시 연결",
+  about: "정보",
 
   warning: (w) => {
     switch (w.kind) {

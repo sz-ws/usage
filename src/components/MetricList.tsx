@@ -18,6 +18,8 @@ interface Props {
   report: Report;
   days: number;
   selected: string | null;
+  /** One line per metric, for the layout that keeps everything on one screen. */
+  dense?: boolean;
   onSelect: (id: MetricId) => void;
   /**
    * On a narrow screen the detail of the selected metric opens under its row;
@@ -53,9 +55,12 @@ function byProduct(evaluations: readonly Evaluation[]): [Product, Evaluation[]][
   return [...groups.entries()];
 }
 
+/** How much room a row takes: two lines, one line under its product's name, or one line on its own. */
+type RowSize = "roomy" | "compact" | "dense";
+
 interface RowProps {
   evaluation: Evaluation;
-  roomy: boolean;
+  size: RowSize;
   index: number;
   elapsed: number;
   isSelected: boolean;
@@ -63,7 +68,8 @@ interface RowProps {
   inlineDetail?: (evaluation: Evaluation) => ReactNode;
 }
 
-function Row({ evaluation, roomy, index, elapsed, isSelected, onSelect, inlineDetail }: RowProps) {
+function Row({ evaluation, size, index, elapsed, isSelected, onSelect, inlineDetail }: RowProps) {
+  const roomy = size === "roomy";
   const m = useMessages();
   const { def } = evaluation;
   const text = metricText(def.id, m);
@@ -77,6 +83,7 @@ function Row({ evaluation, roomy, index, elapsed, isSelected, onSelect, inlineDe
         type="button"
         className="metric"
         data-roomy={roomy || undefined}
+        data-dense={size === "dense" || undefined}
         id={`metric-${def.id}`}
         aria-label={m.metricList.row({ metric: def.id, figures: amounts, caption, value })}
         {...(inlineDetail
@@ -85,7 +92,7 @@ function Row({ evaluation, roomy, index, elapsed, isSelected, onSelect, inlineDe
         onClick={() => onSelect(def.id)}
       >
         <span className="metric-name">
-          {roomy ? text.label : text.short}
+          {size === "compact" ? text.short : text.label}
           {word && (
             <span className="flag" data-tone={toneOf(evaluation.status)}>
               {word}
@@ -109,7 +116,7 @@ function Row({ evaluation, roomy, index, elapsed, isSelected, onSelect, inlineDe
  * all under 1% of their allowance, wait behind one line and open as a compact
  * list grouped the way Cloudflare sells them.
  */
-export function MetricList({ notable, minor, unused, report, days, selected, onSelect, inlineDetail }: Props) {
+export function MetricList({ notable, minor, unused, report, days, selected, dense, onSelect, inlineDetail }: Props) {
   const m = useMessages();
   const [minorShown, setMinorShown] = useState(false);
   // A link that selects one of the small ones has to be able to show it.
@@ -119,11 +126,11 @@ export function MetricList({ notable, minor, unused, report, days, selected, onS
     1,
     Math.max(0, (report.asOfMs - fromIso(report.cycle.start)) / (report.cycle.days * DAY_MS)),
   );
-  const row = (evaluation: Evaluation, index: number, roomy: boolean) => (
+  const row = (evaluation: Evaluation, index: number, size: RowSize) => (
     <Row
       key={evaluation.def.id}
       evaluation={evaluation}
-      roomy={roomy}
+      size={size}
       index={index}
       elapsed={elapsed}
       isSelected={selected === evaluation.def.id}
@@ -136,7 +143,7 @@ export function MetricList({ notable, minor, unused, report, days, selected, onS
     <section className="metrics" aria-labelledby="metrics-heading">
       <h2 id="metrics-heading">{m.metricList.heading}</h2>
 
-      {notable.length > 0 && <ul className="metric-rows">{notable.map((evaluation, index) => row(evaluation, index, true))}</ul>}
+      {notable.length > 0 && <ul className="metric-rows">{notable.map((evaluation, index) => row(evaluation, index, dense ? "dense" : "roomy"))}</ul>}
 
       {minor.length > 0 && (
         <>
@@ -158,7 +165,7 @@ export function MetricList({ notable, minor, unused, report, days, selected, onS
               {byProduct(minor).map(([product, evaluations]) => (
                 <div key={product} className="metric-group">
                   <h3>{m.products[product]}</h3>
-                  <ul className="metric-rows">{evaluations.map((evaluation, index) => row(evaluation, index, false))}</ul>
+                  <ul className="metric-rows">{evaluations.map((evaluation, index) => row(evaluation, index, "compact"))}</ul>
                 </div>
               ))}
             </div>

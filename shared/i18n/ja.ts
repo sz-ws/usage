@@ -370,6 +370,7 @@ export const ja: Messages = {
   },
 
   reconnect: "再接続",
+  about: "このページについて",
 
   warning: (w) => {
     switch (w.kind) {

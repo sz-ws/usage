@@ -130,3 +130,26 @@
     white-space: normal;
   }
 }
+
+/* In the left column of the one-screen layout: the sentence, then where the period stands. */
+.desk .verdict {
+  grid-template-columns: minmax(7rem, 1fr) auto;
+  gap: 0.7rem 1rem;
+  padding: 1rem 1.15rem;
+}
+
+.desk .verdict-text {
+  grid-column: 1 / -1;
+}
+
+.desk .verdict h1 {
+  font-size: 1.2rem;
+}
+
+.desk .verdict-text p {
+  font-size: var(--text-small);
+}
+
+.desk .timeline p {
+  white-space: normal;
+}

@@ -73,13 +73,72 @@ h2 {
   margin-top: 0.5rem;
 }
 
-.board[data-wide] {
-  grid-template-columns: minmax(0, 28rem) minmax(0, 1fr);
+/*
+ * A wide screen (60rem, the same line App.tsx draws) holds the whole page at
+ * once. The page takes the height of the window and does not scroll; the list
+ * on the left and the detail on the right each scroll when they need to.
+ */
+@media (min-width: 60rem) {
+  .page:has(> .desk) {
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100dvh;
+    padding-bottom: 1rem;
+  }
+}
+
+.desk {
+  grid-template-columns: minmax(0, 28.5rem) minmax(0, 1fr);
+  gap: 1.75rem;
+  min-height: 0;
+}
+
+.desk-side,
+.desk-stage {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+  min-width: 0;
+  min-height: 0;
+}
+
+.desk-side {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.desk-stage {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+/* Findings may be absent, and then the detail is the only row. */
+.desk-stage:not(:has(> .findings)) {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.desk-scroll {
+  display: grid;
+  gap: 1.25rem;
+  align-content: start;
+  min-height: 0;
+  /* Room for the selected row's shadow and the focus ring, which would be clipped otherwise. */
+  margin: -0.25rem -0.9rem 0;
+  padding: 0.25rem 0.9rem 1rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-hairline-strong) transparent;
+}
+
+.desk .pane {
+  position: static;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-hairline-strong) transparent;
+}
+
+.desk .sources {
+  margin-top: 0;
 }
 
 .pane {
-  position: sticky;
-  top: 1rem;
   min-width: 0;
   padding: 1.5rem 1.75rem 1.75rem;
   border-radius: var(--radius-card);

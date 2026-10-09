@@ -1,0 +1,40 @@
+/* The panel shares the alerts dialog's frame and buttons (alerts.css); only its reading text is its own. */
+.about-body {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.5rem 1.6rem 1.4rem;
+  font-size: var(--text-small);
+}
+
+.about-body p,
+.about-body ul {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.about-body ul {
+  padding-left: 1.1rem;
+  color: var(--color-muted);
+}
+
+.about-body a {
+  color: var(--color-heading);
+  text-underline-offset: 0.25em;
+  text-decoration-color: var(--color-hairline-strong);
+  transition: text-decoration-color var(--duration-fast);
+}
+
+.about-body a:hover {
+  text-decoration-color: currentcolor;
+}
+
+.about-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.95em;
+  color: var(--color-heading);
+  overflow-wrap: anywhere;
+}
+
+.about-body .alerts-actions form {
+  display: contents;
+}

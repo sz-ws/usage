@@ -365,6 +365,7 @@ export const zhCN: Messages = {
   },
 
   reconnect: "重新连接",
+  about: "关于",
 
   warning: (w) => {
     switch (w.kind) {

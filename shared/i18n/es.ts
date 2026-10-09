@@ -507,6 +507,7 @@ export const es: Messages = {
   },
 
   reconnect: "Volver a conectar",
+  about: "Acerca de",
 
   warning: (w) => {
     switch (w.kind) {

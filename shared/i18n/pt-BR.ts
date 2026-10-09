@@ -455,6 +455,7 @@ export const ptBR: Messages = {
   },
 
   reconnect: "Reconectar",
+  about: "Sobre",
 
   warning: (w) => {
     switch (w.kind) {

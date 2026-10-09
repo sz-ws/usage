@@ -408,6 +408,7 @@ export const en: Messages = {
   },
 
   reconnect: "Reconnect",
+  about: "About",
 
   warning: (w) => {
     switch (w.kind) {
