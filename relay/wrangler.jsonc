@@ -1,0 +1,9 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "usage-connect",
+  "compatibility_date": "2026-10-01",
+  // Static files only: no script runs here, so there is no "main".
+  "assets": { "directory": "./public" },
+  // No routes: the custom domain is added at deploy time.
+  "observability": { "enabled": false }
+}

@@ -1,0 +1,2 @@
+# Types for the tests; the pages never load them.
+*.d.ts

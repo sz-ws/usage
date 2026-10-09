@@ -1,0 +1,194 @@
+/*
+ * The relay page. It looks like the pages a usage page draws for signing in
+ * (public/door.css in the same repository): the product's name above a white
+ * card, one strong button at the card's foot. Repeated here because the relay
+ * is served on its own, from an address of its own.
+ */
+:root {
+  color-scheme: light;
+  --color-bg: #fbfaf9;
+  --color-card: #ffffff;
+  --color-wash: #f3f1ee;
+  --color-heading: #343433;
+  --color-body: #494440;
+  --color-muted: #7a7774;
+  --color-hairline: #e9e6e2;
+  --color-hairline-strong: #dcdad6;
+  --color-accent: #343433;
+  --color-accent-strong: #1f1f1e;
+  --radius-card: 16px;
+  --radius-control: 10px;
+  --duration-fast: 180ms;
+  --pad: clamp(1.4rem, 5vw, 2.1rem);
+  --inset: 0.9rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  display: grid;
+  place-items: start center;
+  padding: clamp(2rem, 9vh, 5rem) 1rem 3rem;
+  background: var(--color-bg);
+  color: var(--color-body);
+  font-family:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "PingFang TC", "Noto Sans TC", Arial,
+    sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.relay-shell {
+  width: 100%;
+  max-width: 30rem;
+}
+
+.relay-product {
+  margin: 0 0 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-heading);
+}
+
+.relay {
+  padding: var(--pad);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  box-shadow:
+    inset 0 0 0 1px var(--color-hairline),
+    0 18px 40px -28px rgb(52 52 51 / 0.28);
+}
+
+.relay > :last-child,
+#view > :last-child,
+#confirm > :last-child {
+  margin-bottom: 0;
+}
+
+h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.3rem;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--color-heading);
+  text-wrap: balance;
+}
+
+p {
+  margin: 0 0 0.9rem;
+}
+
+.relay-lead {
+  color: var(--color-muted);
+}
+
+/* The one thing to check before going on, so it is the one thing that stands out. */
+.relay-origin {
+  margin: 1.2rem 0;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-control);
+  background: var(--color-bg);
+  box-shadow: inset 0 0 0 1px var(--color-hairline);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.02rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--color-heading);
+  overflow-wrap: anywhere;
+}
+
+button {
+  display: block;
+  width: calc(100% + (var(--pad) - var(--inset)) * 2);
+  min-height: 3.1rem;
+  margin: 1.5rem calc(var(--inset) - var(--pad)) 0;
+  padding: 0.65rem 1.1rem;
+  border: 0;
+  border-radius: max(calc(var(--radius-card) - var(--inset)), var(--radius-control));
+  background: var(--color-accent);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease;
+}
+
+button:hover {
+  background: var(--color-accent-strong);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.relay-stop {
+  margin: 0.9rem 0 0;
+  text-align: center;
+  font-size: 0.84rem;
+  color: var(--color-muted);
+}
+
+.relay-foot {
+  display: flex;
+  justify-content: center;
+  margin: 1.25rem 0 0;
+}
+
+.relay-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.8rem 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: var(--color-card);
+  box-shadow: inset 0 0 0 1px var(--color-hairline-strong);
+  color: var(--color-body);
+  font-size: 0.84rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition:
+    color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
+}
+
+.relay-source:hover {
+  box-shadow: inset 0 0 0 1px var(--color-heading);
+  color: var(--color-heading);
+}
+
+.relay-source svg {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+}
+
+a {
+  color: var(--color-heading);
+  text-underline-offset: 0.2em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}

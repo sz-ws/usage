@@ -1,0 +1,8 @@
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; form-action https: http://localhost:* http://127.0.0.1:*; base-uri 'none'; frame-ancestors 'none'
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+
+/callback
+  Cache-Control: no-store
